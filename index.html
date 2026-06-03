@@ -2,28 +2,35 @@
 <html lang="en-US" xmlns="http://www.w3.org/1999/html">
 <head>
     <!-- Angular Material requires Angular.js Libraries -->
+    <script src="./libraries/jquery-4.0.0.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-aria.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-messages.min.js"></script>
     <!-- Angular Material Library -->
     <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
+    <!-- Angular-drag-and-drop-lists Library -->
+    <script src="./libraries/angular-drag-and-drop-lists.min.js"></script>
+    <!-- Angular tooltips Library -->
+    <script src="https://cdn.jsdelivr.net/npm/angular-tooltips@1.2.2/dist/angular-tooltips.min.js"></script>
 
-    <script src="base64.js"></script>
-    <script src="index.js"></script>
+    <script defer src="base64.js"></script>
+    <script defer src="color-picker.js"></script>
+    <script defer src="index.js"></script>
 
-    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="index.css">
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.css">
+    <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="index.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/angular-tooltips@1.2.2/dist/angular-tooltips.min.css" />
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.css" />
 
 
-    <title>FtHoF Planner v6</title>
+    <title>FtHoF Planner v6.1</title>
 </head>
 <body>
 <md-toolbar>
     <div class="md-toolbar-tools">
         <h1>
-            <span>Cookie Clicker FtHoF Planner v6</span>
+            <span>Cookie Clicker FtHoF Planner v6.1</span>
         </h1>
     </div>
 </md-toolbar>
@@ -37,11 +44,11 @@
             <md-button class="md-raised md-primary" ng-click="load_game()">Import Save or Seed</md-button>
         </div>
 
-        <p></p><b>Based on FtHoF planner v1, v2, v3, v4, and v5 by RebelKeithy, Skeezy, Eminenti, Mylaaan, and Joseph. Huge thanks to them for
+        <p ng-show="advancedFeatures"><b>Based on FtHoF planner v1, v2, v3, v4, and v5 by RebelKeithy, Skeezy, Eminenti, Mylaaan, and Joseph. Huge thanks to them for
         creating such a helpful (and moddable) tool!</br>
-        The current version is compatible with cookie clicker 2.058, "housekeeping". You can find combo data in the console logs!
+        The current version is compatible with cookie clicker 2.058, "housekeeping". You can find combo data in the console logs!</p>
         <br>
-        <md-button class="md-raised md-primary" ng-click="collapse_interface(1)">Version History</md-button></b></p>
+        <md-button class="md-raised md-primary" ng-click="collapse_interface(1)" ng-show="advancedFeatures">Version History</md-button></b>
         <div class="collapse-content" id="content-1">
             <ul>
                 <li><a href="http://fthof-planner.s3-website.us-east-2.amazonaws.com/">FtHoF planner V1</a> by
@@ -106,22 +113,94 @@
                 </li>
             </ul>
         </div>
-        <md-button class="md-raised md-primary" ng-click="collapse_interface(2)">Guide</md-button>
+        <div style="width: 100%; display: flex;" ng-show="hasSeed">
+            <md-button class="md-raised" ng-show="advancedFeatures" ng-click="collapse_interface(2)" style="flex: 1;">Historical Guide</md-button>
+            <md-button class="md-raised md-primary" ng-click="collapse_interface(4); unifiedGuideIsOpen = !unifiedGuideIsOpen;" style="flex: 2;">{{unifiedGuideIsOpen?'Close guide':'Click me for help! (unified guide)'}}</md-button>
+            <md-button class="md-raised{{advancedFeatures?'':' md-warn'}}" ng-click="advancedFeatures = !advancedFeatures" style="flex: 1;">{{ advancedFeatures?'Hide advanced features':'Enable advanced features' }}</md-button>
+        </div>
         </p>
+        <div class="collapse-content" id="content-4" style="text-align: center;">
+            <div style="text-align: center; width: 100%; margin-bottom: 10px;">
+                Unified FtHoF guide compiled by CursedSliver. Based on the historical guide made by RebelKeithy, Skeezy, Mylaaan, and Joseph.
+                <br>Click the arrow to the right of each panel to open it.
+            </div>
+            <md-divider></md-divider>
+            <md-toolbar class="md-hue-2">
+                <div class="md-toolbar-tools">
+                    <h2 flex md-truncate>About the Grimoire</h2>
+                    <md-button class="md-icon-button" aria-label="Toggle visbility of panel" ng-click="guideHidingStatuses[0] = !guideHidingStatuses[0]">
+                        <md-icon md-svg-icon="img/upArrow.svg" class="{{guideHidingStatuses[0]?'flipped':''}}"></md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+            <div class="block" ng-if="guideHidingStatuses[0]">
+                <p>The Grimoire is a minigame in cookie clicker unlocked by getting your wizard towers to at least level 1 using a sugar lump. 
+                Sugar lumps are unlocked at 1 billion cookies baked. 
+                <br>If you don't have the Grimoire unlocked, you aren't ready to use this tool.</p>
+                <md-divider></md-divider>
+                <p>
+                    <img src="./img/grimoire.png"><br>
+                    <small>A screenshot of the Grimoire minigame.</small><br>
+                    In the Grimoire, you cast spells from a selection of 9 different spells to boost your production in various ways. Casting spells cost magic, which regenerates over time.<br>
+                    Each spell also has a small chance to "backfire" when casted, producing a different set of "unintended" effects that are sometimes negative.<br>
+                    This tool is primarily concerned with the second spell in the list, called <b>F</b>orce <b>t</b>he <b>H</b>and <b>o</b>f <b>F</b>ate (<b>FtHoF</b> for short). Its effect is spawning a golden cookie.
+                    <br>The probabilities of getting each of the various golden cookie effects are different from the probabilities of naturally spawned golden cookies.
+                    <br><br><img src="./img/FtHoFProbs.png"><br>
+                    <small>The modified effect probabilities of various effects from FtHoF. Notably, Click frenzy (777x click power) is much more common than normal.</small>
+                </p>
+            </div>
+            <md-divider></md-divider>
+            <md-toolbar class="md-hue-1">
+                <div class="md-toolbar-tools">
+                    <h2 flex md-truncate>Effect predictions</h2>
+                    <md-button class="md-icon-button" aria-label="Toggle visbility of panel" ng-click="guideHidingStatuses[1] = !guideHidingStatuses[1]">
+                        <md-icon md-svg-icon="img/upArrow.svg" class="{{guideHidingStatuses[1]?'flipped':''}}"></md-icon>
+                    </md-button>
+                </div>
+            </md-toolbar>
+            <div class="block" ng-if="guideHidingStatuses[1]">
+                <p>
+                    The Grimoire has many random elements. Force the Hand of Fate (shorthand: FtHoF) in particular, as seen above, can give many different effects at different probabilities. 
+                    <br>One particular property of the Grimoire is that its random elements cannot be rerolled. This is called "seeded random". To see what I mean, do the following:
+                    <br>1. Make a backup of your current game using the Export save button in options.
+                    <br>2. Cast Force the Hand of Fate (FtHoF).
+                    <br>3. Click the golden/wrath cookie that spawns, and note down its effect. (also note down where it spawned)
+                    <br>4. Import the backup you made to go back to before you casted the spell.
+                    <br>5. Go back to step 2 as many times as needed. You will see that you will always get the same effect from that golden/wrath cookie, 
+                    it will either stay golden or stay wrath, and it will always spawn at the same place, <b>no matter how many times you do it</b>.
+                </p>
+                <md-divider></md-divider>
+                <p>
+                    This is because randomness in the Grimoire is based on a hidden "game seed" and the amount of spells you have ever casted in the Grimoire. 
+                    The game seed only changes when you ascend, while the spell casted number increments by 1 for each spell you cast. You can see how many you have casted below the magic bar.
+                    <br><img src="./img/castCount.png">
+                    <br><small>The important number is second one, after "total:"</small>
+
+                    <br>If neither of those changes, the same spell will <b>always</b> give the same outcome.
+                </p>
+                <md-divider></md-divider>
+                <p>
+                    Because the randomness only depends on those two things, this tool extracts the hidden game seed from your save file, 
+                    and uses that to produce predictions about what you will get next from FtHoF (you should know what this means by now) by reverse engineering the game's code.
+                    <br>The table at the bottom of the website contains your future predictions. You can hover over each effect to see what it means.
+                    <br><small>Tip: because outcomes only depend on the game seed and the cast count, you can skip undesirable effects by casting a non-FtHoF, cheaper spell, saving magic regeneration time.</small>
+                </p>
+            </div>
+        </div>
         <div class="collapse-content" id="content-2">
             Guide from RebelKeithy, Skeezy, Mylaaan, and Joseph:
             <ul>
                 <pre>RebelKeithy</pre>
 
                 <li>
-                    <b>Force the Hand of Fate is not completely random, it is based on your game's seed (which changes
+                    <b>Force the Hand of Fate (also called FtHoF) is not completely random, it is based on your game's seed (which changes
                         after each ascension) and on the number of spells cast this game. This means that if you know
                         the seed then you can predict the results for casting Force the Hand of Fate:</b>
                     <ul>
                         <li>There are two main things that can affect the result of FtHoF, the current season <s>and the
-                            golden cookie sound selector</s>. If the season is Valentines or Easter the random seed will
+                            golden cookie sound selector</s>. <s>If the season is Valentines or Easter the random seed will
                             be
-                            increased once. This means there are 2 possible results for each cast of FtHoF depending on
+                            increased once</s> Some seasons will alter the outcomes of FtHoF. This means there are 2 possible results for each cast of FtHoF depending on
                             the selected season. Continuing to switch between seasons will not affecting the results,
                             they only affect the result at the time the spell is cast.
                         </li>
@@ -229,7 +308,7 @@
             </ul>
         </div>
 
-        <md-divider></md-divider>
+        <md-divider ng-show="advancedFeatures"></md-divider>
 
         <!-- <md-button class="md-raised md-primary" ng-click="calculate_combos()">Calculate Combos (advanced)</md-button>
         (Locate more complex combos up to the lookahead with this button. The information below is not used for normal calculations.)
@@ -240,91 +319,312 @@
         <label>Configuration data<br><textarea ng-model="config" rows="5" cols="30" placeholder="522fthof 52di/F 22fthof R+522fthof..."></textarea></label>
         <br> -->
 
-        <ul ng-if="combos">
-            <li class="combo-listitem" ng-repeat="combo in combos">
-                <b>{{$index + min_combo_length}}x Combo</b>
-                <ul ng-if="combo.shortest.idx == -1">
-                    <li>No combo of this length</li>
-                </ul>
-                <ul ng-if="combo.shortest.idx != -1">
-                    <li ng-if="combo.first.idx != -1"><a href="#{{combo.first.idx}}">Earliest:</a> Length
-                        {{combo.first.length}}; spread {{combo.first.length - ($index + min_combo_length)}}; starting at
-                        <a href="#{{combo.first.idx}}">spell #{{combo.first.idx+1}}</a></li>
-                    <li ng-if="combo.first.idx == -1">No combo of this length with spread below {{max_spread+1}}</li>
-                    <li><a href="#{{combo.shortest.idx}}">Shortest:</a> Length {{combo.shortest.length}}; spread
-                        {{combo.shortest.length - ($index + min_combo_length)}}; starting at <a
+        <md-button class="md-raised md-primary" ng-show="advancedFeatures" ng-click="comboFinder = !comboFinder;">{{comboFinder?'Close':'Open'}} Combo finder</md-button>
+        <div ng-if="comboFinder">
+            <ul ng-if="combos">
+                <li class="combo-listitem" ng-repeat="combo in combos">
+                    <b>{{$index + min_combo_length}}x Combo</b>
+                    <ul ng-if="combo.shortest.idx == -1">
+                        <li>No combo of this length</li>
+                    </ul>
+                    <ul ng-if="combo.shortest.idx != -1">
+                        <li ng-if="combo.first.idx != -1"><a href="#{{combo.first.idx}}">Earliest:</a> Length
+                            {{combo.first.length}}; spread {{combo.first.length - ($index + min_combo_length)}}; starting at
+                            <a href="#{{combo.first.idx}}">spell #{{combo.first.idx+1}}</a>
+                        </li>
+                        <li ng-if="combo.first.idx == -1">No combo of this length with spread below {{max_spread+1}}</li>
+                        <li><a href="#{{combo.shortest.idx}}">Shortest:</a> Length {{combo.shortest.length}}; spread
+                            {{combo.shortest.length - ($index + min_combo_length)}}; starting at <a
                                 href="#{{combo.shortest.idx}}">spell #{{combo.shortest.idx+1}}</a></li>
-                </ul>
-            </li>
-        </ul>
+                    </ul>
+                </li>
+            </ul>
+        
+            <b>Options:</b>
+            <br>
+            <label>Lookahead Length <input type="number" ng-model="lookahead" min=10 max=100000></label>
+        
+            <label>Min Combo <input type="number" ng-model="min_combo_length" min=1 max=20></label>
+        
+            <label>Max Combo <input type="number" ng-model="max_combo_length" min=1 max=20></label>
+        
+            <label>Max Spread <input type="number" ng-model="max_spread" min=0 max=99></label>
+            <br>
+            <md-checkbox ng-checked=true ng-model="include_ef_in_sequence" aria-label="Include Elder Frenzy">
+                Include Elder Frenzies
+            </md-checkbox>
+            <md-checkbox ng-checked=true ng-model="skip_abominations" aria-label="Allow Abomination Skips">
+                Skip Abominations
+            </md-checkbox>
+        
+            <md-checkbox ng-checked=true ng-model="skip_edifices" aria-label="Allow Spontaneous Edifice Skips">
+                Skip Spontaneous Edifices
+            </md-checkbox>
+        </div>
 
-        <md-divider></md-divider>
-        <br>
-        <md-checkbox ng-model="dark_mode" checkd>
-            Dark Mode
-        </md-checkbox>
-        <md-checkbox ng-model="default_font" checked>
-            Default Font
-        </md-checkbox>
-        <br>
-        <b>Options:</b>
-        <br>
-        <label>Lookahead Length <input type="number" ng-model="lookahead" min=10 max=1000></label>
+        <md-divider ng-show="advancedFeatures"></md-divider>
 
-        <label>Min Combo <input type="number" ng-model="min_combo_length" min=1 max=20></label>
+        <div class="visual-options" ng-show="advancedFeatures" style="padding: 5px;">
+            <md-checkbox ng-model="dark_mode" checkd>
+                Dark Mode
+            </md-checkbox>
+            <md-checkbox ng-model="default_font" checked>
+                Default Font
+            </md-checkbox>
+            <md-checkbox ng-model="change_icons" aria-label="Change Icons">
+                Combo-focused Icons
+            </md-checkbox>
+        </div>
 
-        <label>Max Combo <input type="number" ng-model="max_combo_length" min=1 max=20></label>
+        <md-divider ng-show="advancedFeatures"></md-divider>
 
-        <label>Max Spread <input type="number" ng-model="max_spread" min=0 max=99></label>
-        <br>
-        <b>(These two options are only used for GFD)</b>
-        <label>Current Mana <input type="number" ng-model="magic" min=0 max=1000></label>
-        <label>Maximum Mana <input type="number" ng-model="max_magic" min=0 max=1000></label>
+        <md-button ng-show="advancedFeatures" class="md-raised{{ highlightSettingsExpanded?'':' md-primary'}}" ng-click="highlightSettingsExpanded = !highlightSettingsExpanded;">Show/Hide Highlight Settings</md-button>
+        
+        <div ng-show="highlightSettingsExpanded && advancedFeatures" class="highlights-box">
+            <div class="highlights-box-title">
+                <b>Highlight Conditions</b>
+                <div>
+                    <md-button class="md-raised" ng-click="highlightSettingsExpanded = false" style="margin: 0; box-sizing: border-box;">
+                        Close
+                    </md-button>
+                    <md-button class="md-raised{{advancedModeEnabled?' red-border':''}}" ng-click="advancedModeEnabled = !advancedModeEnabled" style="margin: 0; box-sizing: border-box;">
+                        {{advancedModeEnabled ? 'Turn OFF advanced mode' : 'Turn ON advanced mode'}}
+                    </md-button>
+                </div>
+            </div>
 
-        <md-divider></md-divider>
-        <br>
-        <md-checkbox ng-checked=true ng-model="include_ef_in_sequence" aria-label="Include Elder Frenzy">
-            Include Elder Frenzies
-        </md-checkbox>
+            <div class="all-highlight-conditions" dnd-list="highlightConditionsList"> 
+                <div class="highlight-condition-container{{ highlightRearrangementEnabled?' rearranging':'' }}" dnd-effect-allowed="move" dnd-disable-if="!highlightRearrangementEnabled"
+                    dnd-moved="highlightConditionsList.splice($index, 1)"
+                    dnd-draggable="conditionRep" ng-repeat="conditionRep in highlightConditionsList"
+                    ng-init="conditionId = conditionRep.value; condition = highlightConditions.get(conditionId); isPickerOpen = false;">
+                    <div class="highlight-condition">
+                        <!-- Condition ID Input -->
+                        <div>
+                            <label style="font-size: 12px; color: #666;">ID</label>
+                            <input class="condition-id" type="text" ng-model="condition.id" ng-readonly="highlightRearrangementEnabled"
+                                ng-change="conditionId = updateConditionId(conditionId, condition.id)">
+                        </div>
+            
+                        <!-- Color Input -->
+                        <div>
+                            <label style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 8px;">
+                                <span class="color-square" ng-style="{'background-color': condition.color}"></span>
+                                Color
+                            </label>
+                            <div class="color-input-container">
+                                <input class="condition-color" type="text" ng-model="condition.color"
+                                    ng-change="updateConditionColor(condition, condition.color)" ng-readonly="highlightRearrangementEnabled" placeholder="Blank for no color">
+                                <div class="picker-open" ng-click="isPickerOpen = !isPickerOpen;" ng-show="!highlightRearrangementEnabled">
+                                    <color-picker color="splitColorAndAlpha(condition.color).color"
+                                        opacity="splitColorAndAlpha(condition.color).alpha" is-open="isPickerOpen" ng-if="true">
+                                    </color-picker>
+                                </div>
+                            </div>
+                        </div>
+            
+                        <!-- Condition Selector or Text Input -->
+                        <div>
+                            <label style="font-size: 12px; color: #666;">Condition</label>
+                            <div ng-if="!advancedModeEnabled" style="display: flex; gap: 6px;">
+                                <select class="condition-select"
+                                    ng-if="!highlightRearrangementEnabled && (condition.ast.constructor.type === 'statement' || condition.ast.constructor.type === 'condition_check')"
+                                    ng-model="condition.selectedStatement"
+                                    ng-change="updateConditionStatement(condition, condition.selectedStatement)"
+                                    ng-init="condition.selectedStatement = condition.ast.statementType.name">
+                                    <option ng-repeat="statement in availableStatements" value="{{statement.name}}">{{statement.name
+                                        + ' (' + statement.constructor.type + ')'}}</option>
+                                </select>
+                                <div class="condition-select unavailable"
+                                    ng-if="!highlightRearrangementEnabled && !(condition.ast.constructor.type === 'statement' || condition.ast.constructor.type === 'condition_check')">
+                                    Toggle on advanced mode to modify this condition</div>
+                                <div class="condition-select in-transit"
+                                    ng-if="highlightRearrangementEnabled" readonly>{{ condition.conditionsText }}</div>
+                            </div>
+                            <input class="condition-select advanced-input" ng-if="advancedModeEnabled" type="text"
+                                ng-model="condition.conditionsText"
+                                ng-change="updateConditionExpression(condition, condition.conditionsText)" style=""
+                                placeholder="e.g., bs & fthof | ef" ng-value="condition.conditionsText">
+                        </div>
+            
+                        <!-- Delete Button -->
+                        <md-button class="md-raised" ng-click="highlightRearrangementEnabled?null:removeHighlightCondition(condition)" style="margin: 0;">
+                            Delete
+                        </md-button>
+                    </div>
+            
+                    <!-- Error Display -->
+                    <div class="condition-error" ng-if="condition.parseError">
+                        Error: {{condition.parseError.type + ': ' +
+                        (condition.parseError.message?condition.parseError.message:condition.parseError.position) }}
+                    </div>
+                </div>
+            </div>
 
-        <md-checkbox ng-checked=true ng-model="skip_abominations" aria-label="Allow Abomination Skips">
-            Skip Abominations
-        </md-checkbox>
+            <!-- Condition and Control Buttons -->
+            <div class="button-grid-container">
+                <!-- First Row: Rearrange | Add New Highlight | Reset Default -->
+                <div class="button-grid-row-1">
+                    <md-button class="md-raised button-rearrange {{ highlightRearrangementEnabled?'active':'md-primary' }}" ng-click="toggleRearrangementMode();" style="width: 25%; flex-grow: 0;">
+                        {{ highlightRearrangementEnabled?'Disable rearrangement':'Enable rearrangement' }}
+                    </md-button>
+                    <md-button class="md-raised md-primary button-add-highlight" ng-click="addHighlightCondition()" style="width: 50%; flex-grow: 0;">
+                        Add New Highlight
+                    </md-button>
+                    <md-button class="md-raised md-primary button-reset-default" ng-click="resetDefaultHighlights()" style="width: 25%; flex-grow: 0;">
+                        Reset Default
+                    </md-button>
+                </div>
+                <!-- Second Row: Export | Import | Advanced Help -->
+                <div class="button-grid-row-2">
+                    <md-button class="md-raised button-export" ng-click="exportHighlights()" style="width: 33.333%; flex-grow: 0;">
+                        Export to clipboard
+                    </md-button>
+                    <md-button class="md-raised button-import" ng-click="importHighlights()" style="width: 33.333%; flex-grow: 0;">
+                        Import
+                    </md-button>
+                    <md-button class="md-raised button-advanced-help" ng-click="advancedHelpVisibility = !advancedHelpVisibility;" style="width: 33.334%; flex-grow: 0;">
+                        Advanced Help
+                    </md-button>
+                </div>
+            </div>
 
-        <md-checkbox ng-checked=true ng-model="skip_edifices" aria-label="Allow Spontaneous Edifice Skips">
-            Skip Spontaneous Edifices
-        </md-checkbox>
+            <div ng-show="advancedHelpVisibility" style="margin: auto; width: 100%; border: #ccc 1px solid; margin-top: 8px; padding: 5px;">
+                <p style="text-align: center;">Within Advanced mode, you will be able to directly input boolean expressions to specify what exactly should be highlighted.
+                The boolean expression is run against each outcome (for both no change and one change), and then the Gambler's Dream outcome.
+                The expression consists of a bunch of Statements stringed together by Operators and brackets. Details below.</p>
 
-        <md-checkbox ng-model="change_icons" aria-label="Change Icons">
-            Combo-focused Icons
-        </md-checkbox>
+                <h2 style="text-align: center; margin-bottom: 0px;">Operators</h4>
+                <md-table>
+                    <md-table-container style="margin: 10px; margin-top: 0px; text-align: center;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Symbols</th>
+                                    <th>Format</th>
+                                    <th>Function</th>
+                                    <th>Example</th>
+                                    <th>Explanation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>NOT</td>
+                                    <td>!</td>
+                                    <td>![subexpression]</td>
+                                    <td>Inverts or negates the results of the subexpression.</td>
+                                    <td>!Click frenzy</td>
+                                    <td>Any effect OR GFD outcome that is NOT click frenzy.</td>
+                                </tr>
+                                <tr>
+                                    <td>AND</td>
+                                    <td>&</td>
+                                    <td>[subexp] & [subexp]</td>
+                                    <td>Returns true if both subexpressions are true. The subexpressions CANNOT be BOTH Outcome statements.</td>
+                                    <td>Frenzy & isRA:-1</td>
+                                    <td>Matches for Frenzy with the condition named "isRA" true on the previous row.</td>
+                                </tr>
+                                <tr>
+                                    <td>OR</td>
+                                    <td>|</td>
+                                    <td>[subexp] | [subexp]</td>
+                                    <td>Returns true if either subexpression is true.</td>
+                                    <td>Frenzy | Click Frenzy | Elder Frenzy</td>
+                                    <td>Matches any "Frenzy" effect.</td>
+                                </tr>
+                                <tr>
+                                    <td>BRACKETS</td>
+                                    <td>()</td>
+                                    <td>([subexpression])</td>
+                                    <td>The inside subexpression is evaluated independently.</td>
+                                    <td>BS & (isBS:-1 | isBS:-2)</td>
+                                    <td>Matches for a Building Special with the condition named "isBS" true on either the previous or the second previous row.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </md-table-container>
+                </md-table>
 
-        <md-divider></md-divider>
+                <h2 style="text-align: center; margin-top: 5px; margin-bottom: 0px;">Statements</h4>
+                <md-table style="margin: 10px; margin-top: 0px; text-align: center;">
+                    <md-table-container>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Subcategory</th>
+                                    <th>Examples</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td rowspan="4">Outcome statements</td>
+                                    <td>Effect</td>
+                                    <td>Frenzy, Lucky, Cursed Finger, EF, BS, ...</td>
+                                    <td>An outcome from casting Force the Hand of Fate. Impossible outcomes such as Dragonflight are not valid. Supports community recognized abbreviations.</td>
+                                </tr>
+                                <tr>
+                                    <td>GFD</td>
+                                    <td>Conjure Baked Goods, Diminish Ineptitude, FtHoF, ...</td>
+                                    <td>A possible spell that Gambler's Fever Dream can select and cast. Supports community recognized abbreviations.</td>
+                                </tr>
+                                <tr>
+                                    <td>Range</td>
+                                    <td>{0-0.1}, {0.25-1}, {1/7-3/7}, ...</td>
+                                    <td>A range enclosed in curly braces, indicates that the Random Seed entry in the row must be within this range. This is evaluated on the Gambler's Dream column, since the outcome is associated with the Random Seed. Supports integer fractions.</td>
+                                </tr>
+                                <tr>
+                                    <td>Specials</td>
+                                    <td>EFFECT, GFDOUTCOME</td>
+                                    <td>Only matches effects and Gambler's Fever Dream outcomes respectively.</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">Condition statements</td>
+                                    <td>isBS:1, isEF:-1, your own highlighting conditions here</td>
+                                    <td>Matches if the corresponding condition is true on the row offset indicated by the number after the colon. For example, isBS:1 asks to evaluate isBS on all entries in the row after the current one, and returns true if any of them are true.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </md-table-container>
+                </md-table>
+            </div>
+        </div>
 
-        <label>Golden+Wrath Cookies on screen <input type="number" ng-model="on_screen_cookies" min=0 max=10></label>
+        <md-divider ng-show="advancedFeatures"></md-divider>
 
-        <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight Buff Active">
-            Dragonflight Buff Active
-        </md-checkbox>
+        <div class="cast-display-settings" ng-show="advancedFeatures">
+            <label>Golden+Wrath Cookies on screen <input type="number" ng-model="on_screen_cookies" min=0 max=10></label>
+        
+            <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight Buff Active">
+                Dragonflight Buff Active
+            </md-checkbox>
+        
+            <md-checkbox class="c2" ng-model="supremeintellect" aria-label="Supreme Intellect Aura Active">
+                Supreme Intellect Aura Active
+            </md-checkbox>
+        
+            <md-checkbox class="c2" ng-model="diminishineptitude" aria-label="Diminish Ineptitude Active">
+                Diminish Ineptitude Active
+            </md-checkbox>
+            <br>
+            <b>(These two options are only used for GFD)</b>
+            <label>Current Mana <input type="number" ng-model="magic" min=0 max=1000></label>
+            <label>Maximum Mana <input type="number" ng-model="max_magic" min=0 max=1000></label>
+        </div>
 
-        <md-checkbox class="c2" ng-model="supremeintellect" aria-label="Supreme Intellect Aura Active">
-            Supreme Intellect Aura Active
-        </md-checkbox>
+        <md-divider ng-show="hasSeed"></md-divider>
 
-        <md-checkbox class="c2" ng-model="diminishineptitude" aria-label="Diminish Ineptitude Active">
-            Diminish Ineptitude Active
-        </md-checkbox>
+        <md-button class="md-raised md-primary" ng-show="advancedFeatures" ng-click="update_cookies()">Apply Settings</md-button>
+        <md-button class="md-raised md-primary" ng-show="hasSeed" ng-click="cast_spell()" style="min-width: 20%;">Cast Spell</md-button>
 
+        <md-divider ng-show="hasSeed"></md-divider>
 
-        <md-divider></md-divider>
-
-        <md-button class="md-raised md-primary" ng-click="update_cookies()">Apply Settings</md-button>
-        <md-button class="md-raised md-primary" ng-click="cast_spell()">Cast Spell</md-button>
-
-        <md-divider></md-divider>
+        <md-divider ng-show="hasSeed"></md-divider>
 
 
-        <div layout-gt-sm="row" layout="column">
+        <div layout-gt-sm="row" layout="column" ng-show="hasSeed">
             <div flex-gt-sm="15" flex>
                 <md-toolbar layout="row" class="md-hue-3">
                     <div class="md-toolbar-tools">
@@ -345,7 +645,7 @@
                 </md-content>
             </div>
             <md-divider></md-divider>
-			<div flex-gt-sm="15" flex>
+			<div flex-gt-sm="15" flex ng-show="advancedFeatures">
                 <md-toolbar layout="row" class="md-hue-3">
                     <div class="md-toolbar-tools">
                         <h1>Random Seed</h1>
@@ -357,38 +657,46 @@
                         <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null">
                             <div class="md-list-item-text" layout="column">
                                 <a name="{{$index}}"></a>
-                                <h3>{{randomSeeds[$index].toFixed(4) + " (" + (randomSeeds[$index]+baseBackfireChance>1 ? 0 : ((1.075-randomSeeds[$index]-baseBackfireChance)/0.15).toFixed(0)) + " GC)"}}</h3>
+                                <h3>{{cookie_list.firstCall.value.toFixed(4) + " (" + (cookie_list.firstCall.value+baseBackfireChance>1 ? 0 : ((1.075-cookie_list.firstCall.value-baseBackfireChance)/0.15).toFixed(0)) + " GC)"}}</h3>
                             </div>
                         </md-list-item>
                     </md-list>
                 </md-content>
             </div>
-            <md-divider></md-divider>
-            <div flex-gt-sm="30" flex>
-                <md-toolbar layout="row" class="md-hue-3">
+            <md-divider ng-show="advancedFeatures"></md-divider>
+            <div flex-gt-sm="100" flex>
+                <md-toolbar layout="row" class="md-hue-3" style="z-index: 0">
                     <div class="md-toolbar-tools">
-                        <h1>No Change</h1>
+                        <h1>Default predictions</h1>
                     </div>
                 </md-toolbar>
-                <md-content>
+                <md-content style="z-index: 1000;" class="cast-column">
                     <md-list flex>
-                        <md-subheader class="md-no-sticky">No season or Christmas active.</md-subheader>
-                        <md-list-item class="md-2-line" ng-repeat="cookie_list in displayCookies" ng-click="null" title="{{cookie_list[0].description}}">
-                            <img ng-src='{{cookie_list[0].icon}}'
+                        <md-subheader class="md-no-sticky">Only valid with no season or Christmas active.</md-subheader>
+                        <md-list-item class="md-2-line" 
+                            ng-repeat="cookie_list in cookies" ng-click="null" 
+                            tooltips 
+                            tooltip-template="{{cookie_list.getCast(false).getTooltip() + getMarginDividers() + (cookie_list.backfiring()?'If it does not backfire: ':'If it backfires: ') + '<b>' + cookie_list.getOtherCast(false).toString(true) + '</b><br>' + cookie_list.getOtherCast(false).getTooltip() + '<br>' + getFooter('Hold SHIFT to hide this menu.')}}" 
+                            tooltip-class="cast-tooltip"
+                            tooltip-side="{{cookie_list.index===0?'bottom':'top'}}"
+                            tooltip-speed="fast"
+                            tooltip-hidden="{{hideTooltips}}">
+                            <img ng-src='{{cookie_list.getCast(false).getIcon(cookie_list.firstCall.backfires())}}'
                                  class="md-avatar" alt="Golden Cookie"/>
-                            <div class="md-list-item-text{{cookie_list[0].noteworthy ? ' highlightCombo' : ''}}"
-                                 layout="column">
-                                <h3>{{cookie_list[0].type}}</h3>
+                            <div class="md-list-item-text"
+                                 layout="row">
+                                <h3 ng-style="{{cookie_list.getCast(false).getHighlightColor()}}">{{cookie_list.stringify(false)}}</h3>
+                                <h3 class="md-left-margin" ng-show="{{cookie_list.getOtherCast(false).settings.hiddenIndicator}}" ng-style="{{cookie_list.getOtherCast(false).getHighlightColor()}}">{{cookie_list.postfix(false, cookie_list.backfiring()?0:1)}}</h3>
                             </div>
                         </md-list-item>
                     </md-list>
                 </md-content>
             </div>
             <md-divider></md-divider>
-            <div style="display: block;" id="content-3" flex-gt-sm="30" flex>
+            <div style="display: block;" id="content-3" flex-gt-sm="100" flex>
                 <md-toolbar layout="row" class="md-hue-3">
                     <div class="md-toolbar-tools">
-                        <h1>One Change</h1>
+                        <h1>Seasonal predictions</h1>
                         <div style="flex-grow: 1;"></div>
                         <div class="hide-column">
                             <!--Sadly not possible to look clean with md-checkbox as it doesn't resize.-->
@@ -399,20 +707,28 @@
                 </md-toolbar>
                 <md-content>
                     <md-list flex>
-                        <md-subheader class="md-no-sticky">Season is not Christmas.</md-subheader>
-                        <md-list-item class="md-2-line" ng-repeat="cookie_list in displayCookies" ng-click="null" title="{{cookie_list[1].description}}">
-                            <img ng-src='{{cookie_list[1].icon}}'
+                        <md-subheader class="md-no-sticky">
+                            Only valid with an ongoing season that is not Christmas. 
+                            <div class="inquiry-tooltip">?
+                                <md-tooltip md-direction="bottom">
+                                    If there is an ongoing season, its name can be found in the "Special" section of stats.
+                                </md-tooltip>
+                            </div>
+                        </md-subheader>
+                        <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null" title="{{cookie_list.getCast(true).description}}">
+                            <img ng-src='{{cookie_list.getCast(true).getIcon(cookie_list.firstCall.backfires())}}'
                                  class="md-avatar" alt="Golden Cookie"/>
-                            <div class="md-list-item-text{{cookie_list[1].noteworthy ? ' highlightCombo' : ''}}"
-                                 layout="column">
-                                <h3>{{cookie_list[1].type}}</h3>
+                            <div class="md-list-item-text"
+                                 layout="row">
+                                <h3 ng-style="{{cookie_list.getCast(true).getHighlightColor()}}">{{cookie_list.stringify(true)}}</h3>
+                                <h3 class="md-left-margin" ng-show="{{cookie_list.getCast(false).settings.hiddenIndicator}}" ng-style="{{cookie_list.getCast(false).getHighlightColor()}}">{{cookie_list.postfix(false)}}</h3>
                             </div>
                         </md-list-item>
                     </md-list>
                 </md-content>
             </div>
-            <md-divider></md-divider>
-            <div flex-gt-sm="30" flex>
+            <md-divider ng-show="advancedFeatures"></md-divider>
+            <div flex-gt-sm="100" flex ng-show="advancedFeatures">
                 <md-toolbar layout="row" class="md-hue-3">
                     <div class="md-toolbar-tools">
                         <span>Gambler's Dream</span>
@@ -421,18 +737,26 @@
                 <md-content>
                     <md-list flex>
                         <md-subheader class="md-no-sticky">The outcome of Gambler's Fever Dream.</md-subheader>
-                        <md-list-item class="md-2-line" ng-init="hoverText = cookie_list[2].type" ng-mouseover="hoverText = cookie_list[2].hover" ng-click="hoverText = cookie_list[2].hover" ng-mouseleave="hoverText = cookie_list[2] ? cookie_list[2].type : 'Blank'" ng-repeat="cookie_list in displayCookies" ng-click="null">
-                            <img ng-src='{{cookie_list[2].icon}}' class="md-avatar md-pixelated" alt="Golden Cookie"/>
-                            <div class="md-list-item-text{{(cookie_list[2].hasBs || cookie_list[2].hasEf) ? ' highlightCombo' : cookie_list[2].type == 'Resurrect Abomination' || (cookie_list[2].type == 'Spontaneous Edifice' && !cookie_list[2].backfire) ? ' highlightSkip' : ''}}" layout="column">
-                                <h3>{{hoverText}}</h3>
+                        <md-list-item class="md-2-line" ng-init="hoverText = cookie_list.firstCall.GFDOutcomeText();" ng-mouseover="hoverText = cookie_list.firstCall.onHover(access_cookie(cookie_list.index + 1));" ng-click="hoverText = cookie_list.firstCall.onHover(access_cookie(cookie_list.index + 1));" ng-mouseleave="hoverText = cookie_list.firstCall.GFDOutcomeText();" ng-repeat="cookie_list in cookies" ng-click="null">
+                            <img ng-src='{{cookie_list.firstCall.GFDOutcomeIcon(access_cookie(cookie_list.index + 1).firstCall.backfires(Math.max(baseBackfireChance, 0.5)))}}' class="md-avatar md-pixelated" alt="Golden Cookie"/>
+                            <div class="md-list-item-text" layout="column">
+                                <h3 ng-style="{{cookie_list.firstCall.getHighlightColor()}}">{{hoverText}}</h3>
                             </div>
                         </md-list-item>
                     </md-list>
                 </md-content>
             </div>
         </div>
-        <md-button class="md-raised md-primary" ng-click="load_more()">Load More</md-button>
+        <md-button class="md-raised md-primary" ng-click="load_more()" ng-show="hasSeed">Load More</md-button>
     </div>
+    <div ng-show="!hasSeed" style="width: 100%; text-align: center;">
+        Import your save above to see predictions for upcoming Force the Hand of Fate casts. 
+        <span class="inquiry-tooltip">?
+            <md-tooltip md-direction="top">Force the Hand of Fate is a spell in the Grimoire minigame in Cookie Clicker. The Grimoire is unlocked by leveling Wizard towers to level 1 with a sugar lump, unlocked at 1 billion cookies baked.</md-tooltip>
+        </span>
+        This will not modify your save.
+        <br>Note: this tool cannot track changes in your game. 
+        To obtain new predictions after each spell cast, re-import your new save or use the "Cast spell" button after each cast.
 </div>
 </body>
 </html>

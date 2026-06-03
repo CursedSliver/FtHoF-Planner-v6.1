@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
 
+:root {
+    --cast-tooltip-style: block;
+}
+
 body,
 .normal {
     font-family: 'Montserrat', 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
@@ -20,6 +24,9 @@ body,
 .dark .md-content,
 .dark .md-subheader {
     background-color: #999 !important;
+}
+md-checkbox {
+    margin: 4px !important;
 }
 
 .dark .md-icon {
@@ -108,6 +115,12 @@ md-input-container .md-errors-spacer {
     margin-top: 10px;
     margin-bottom: 0;
 }
+md-divider.margined {
+    margin-top: 3px; margin-bottom: 3px;
+}
+small.footer {
+    font-size: 25%;
+}
 
 a {
     font-weight: 600;
@@ -141,7 +154,7 @@ a.hover {
     display: none;
     overflow: hidden;
     border-radius: 4px;
-    border: 5px solid lightblue;
+    border: 5px solid lightblue; 
 }
 
 .hide-column {
@@ -152,4 +165,190 @@ a.hover {
 .hide-column>input {
     width: 13px;
     accent-color: #ef5475;
+}
+
+h3 {
+    display: inline-block;
+    padding: 2px;
+}
+
+.md-left-margin {
+    margin-left: 3px !important;
+}
+
+.red-border {
+    border: 2px solid red !important;
+}
+
+.highlights-box {
+    margin-top: 16px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.highlights-box-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.highlight-condition-container {
+    margin-bottom: 8px;
+    padding: 6px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+}
+.highlight-condition-container.rearranging {
+    border: 2px solid orange;
+}
+
+.highlight-condition {
+    display: grid;
+    grid-template-columns: 3fr 2fr 10fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.condition-id {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    box-sizing: border-box;
+    margin: 0;
+    padding-right: 30px;
+}
+.condition-color {
+    width: 100%;
+    min-width: 0px;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    box-sizing: border-box;
+    margin: 0;
+    padding-right: 30px;
+}
+.color-input-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+}
+.picker-open {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    margin: -12px;
+    z-index: 9998;
+    transform: translateX(-60%) scale(0.9);
+    background-image: url('img/picker.svg');
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.condition-select {
+    flex: 1;
+    padding: 6px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.condition-select.unavailable {
+    border: 1px solid #aaa;
+}
+.condition-select.in-transit {
+    border: 1px solid #aaa;
+    background: #ddd;
+}
+
+.condition-select.advanced-input {
+    width: 100%;
+    border: 1px solid #aaa;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.condition-error {
+    color: red;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
+.color-square {
+    width: 12px;
+    height: 12px;
+    border: 1px solid #ccc;
+    display: inline-block;
+}
+
+.button-grid-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.button-grid-row-1,
+.button-grid-row-2 {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+}
+
+.button-rearrange.active {
+    border: 2px solid red;
+    box-sizing: border-box !important;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.inquiry-tooltip {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: #5b5b5b;
+    color: #fff;
+    cursor: pointer;
+}
+
+/* For the library */
+.highlight-condition-container.dndDraggingSource {
+    display: none;
+}
+
+.block {
+    border: #aaa 1px solid;
+    margin: 10px;
+    margin-top: -2px;
+    padding: 10px;
+    border-radius: 5px;
+}
+.flipped {
+    transform: rotate(180deg);
+}
+
+.cast-tooltip {
+    background-color: white;
+    border: black 2px solid;
+    color: black;
+    z-index: 12379137;
+    width: 100%;
+}
+tooltip.active:not(._force-hidden) tip {
+    /* I love hacking css */
+    display: var(--cast-tooltip-style) !important;
+}
+.tooltips._bottom,.tooltips._top {
+    width: 100%; 
+    /* ik this is extremely hacky but idk how else to make it work (also no, wrapping the tooltiped element doesn't work for some reason */
+}
+.cast-column:hover {
+    z-index: 99999 !important;
+    position: relative;
 }

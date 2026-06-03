@@ -75,9 +75,54 @@ function choose(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-var app = angular.module("myApp", ["ngMaterial"]);
+class LocalStorageManager {
+  constructor(key, configs) {
+    this.key = key;
+    this.always = configs.always ?? (() => { });
+    this.firstLoad = configs.firstLoad ?? (() => { });
+    this.loadFunc = configs.load ?? (() => { });
+    if (configs.save) { this.saveFunc = configs.save; }
+    else { this.saveFunc = null; }
+  }
+
+  static all = {};
+  static register(manager) {
+    this.all[manager.key] = manager;
+    return manager;
+  }
+  static get(name) {
+    return this.all[name] ?? null;
+  }
+
+  save() {
+    if (this.saveFunc && localStorage?.setItem) { localStorage.setItem(this.key, JSON.stringify(this.saveFunc())); }
+  }
+  load() {
+    if (this.loadFunc && localStorage?.getItem) {
+      const result = localStorage.getItem(this.key);
+      if (!result) {
+        this.firstLoad();
+        this.always();
+        return;
+      } 
+      this.always();
+      this.loadFunc(JSON.parse(result));
+    }
+  }
+  static loadAll() {
+    for (let i in this.all) {
+      this.all[i].load();
+    }
+  }
+}
+
+var app = angular.module("myApp", ["ngMaterial", "colorPicker", "dndLists", "720kb.tooltips"]);
 app.controller("myCtrl", function ($scope) {
+  $scope.advancedFeatures = false;
+  $scope.unifiedGuideIsOpen = false;
+
   $scope.seed = "";
+  $scope.hasSeed = true;
   $scope.ascensionMode = 0;
   $scope.spellsCastTotal = 0;
   $scope.spellsCastThisAscension = 0;
@@ -125,11 +170,11 @@ app.controller("myCtrl", function ($scope) {
   // 		randomSeeds.push(roll);
 
   // 		var c = []
-  // 		cookie1Success = check_cookies($scope.spellsCastTotal + i, '', false, true)
-  // 		cookie2Success = check_cookies($scope.spellsCastTotal + i, '', true, true)
-  // 		//cookie3 = check_cookies($scope.spellsCastTotal + i, '', true)
-  // 		cookie1Backfire = check_cookies($scope.spellsCastTotal + i, '', false, false)
-  // 		cookie2Backfire = check_cookies($scope.spellsCastTotal + i, '', true, false)
+  // 		cookie1Success = check_cookies($scope.spellsCastTotal + i, 0, true)
+  // 		cookie2Success = check_cookies($scope.spellsCastTotal + i, 1, true)
+  // 		//cookie3 = check_cookies($scope.spellsCastTotal + i, 1)
+  // 		cookie1Backfire = check_cookies($scope.spellsCastTotal + i, 0, false)
+  // 		cookie2Backfire = check_cookies($scope.spellsCastTotal + i, 1, false)
   // 		var gambler = check_gambler($scope.spellsCastTotal + i)
   // 		c.push(cookie1Success)
   // 		c.push(cookie2Success)
@@ -174,11 +219,14 @@ app.controller("myCtrl", function ($scope) {
   // 	delete $scope.combos
   // }
 
+  $scope.guideHidingStatuses = (new Array(5)).fill(false);
+
   $scope.load_game = function (str, fromURL) {
     if (!str) {
       str = $scope.save_string;
     }
     str = str.trim();
+    $scope.hasSeed = true;
     if (str.length === 5) {
       $scope.seed = str;
       if (!fromURL)
@@ -212,6 +260,87 @@ app.controller("myCtrl", function ($scope) {
     $scope.update_cookies();
   };
 
+  class CastRow {
+    constructor(noChangeSuccess, noChangeBackfire, changeSuccess, changeBackfire, firstCall, index) { 
+      this.firstCall = firstCall;
+      this.firstCall.setParent(this);
+      this.noChangeSuccess = noChangeSuccess;
+      this.noChangeBackfire = noChangeBackfire;
+      this.changeSuccess = changeSuccess;
+      this.changeBackfire = changeBackfire;
+      this.index = index;
+    }
+
+    getCast(change, backfireChance = $scope.baseBackfireChance) {
+      return change ? this.getCastChange(backfireChance) : this.getCastNoChange(backfireChance);
+    }
+    getOtherCast(change, backfireChance = $scope.baseBackfireChance) {
+      const backfiring = (backfireChance + this.firstCall.value >= 1)?0:1;
+      return change ? this.getCastChange(backfiring) : this.getCastNoChange(backfiring);
+    }
+    getCastNoChange(backfireChance) {
+      const backfiring = backfireChance + this.firstCall.value >= 1;
+      return (backfiring ? this.noChangeBackfire : this.noChangeSuccess);
+    }
+    getCastChange(backfireChance) {
+      const backfiring = backfireChance + this.firstCall.value >= 1;
+      return (backfiring ? this.changeBackfire : this.changeSuccess);
+    }
+
+    backfiring(backfireChance = $scope.baseBackfireChance) {
+      return backfireChance + this.firstCall.value >= 1;
+    }
+
+    stringify(change, backfireChance = $scope.baseBackfireChance) {
+      return change ? this.stringifyChange(backfireChance) : this.stringifyNoChange(backfireChance);
+    }
+    postfix(change, backfireChance = $scope.baseBackfireChance) {
+      return change ? this.postfixChange(backfireChance) : this.postfixNoChange(backfireChance);
+    }
+    stringifyNoChange(backfireChance) {
+      const backfiring = backfireChance + this.firstCall.value >= 1;
+      if (!backfiring) {
+        return this.noChangeSuccess.name;
+      } else {
+        return this.noChangeBackfire.name;
+      }
+    }
+    postfixNoChange(backfireChance) {
+      const backfiring = backfireChance + this.firstCall.value >= 1;
+      if (!backfiring) {
+        return this.noChangeSuccess.settings.hiddenIndicator ? ` (${this.noChangeSuccess.shorthand})` : ``;
+      } else {
+        return this.noChangeBackfire.settings.hiddenIndicator ? ` (${this.noChangeBackfire.shorthand})` : ``;
+      }
+    }
+    stringifyChange(backfireChance) {
+      const backfiring = backfireChance + this.firstCall.value >= 1;
+      if (!backfiring) {
+        return this.changeSuccess.name;
+      } else {
+        return this.changeBackfire.name;
+      }
+    }
+    postfixChange(backfireChance) {
+      const backfiring = backfireChance + this.firstCall.value >= 1;
+      if (!backfiring) {
+        return this.changeSuccess.settings.hiddenIndicator ? ` (${this.changeSuccess.shorthand})` : ``;
+      } else {
+        return this.changeBackfire.settings.hiddenIndicator ? ` (${this.changeBackfire.shorthand})` : ``;
+      }
+    }
+
+    parseHighlights() {
+      this.firstCall.setHighlights(this);
+      this.noChangeSuccess.setHighlights(this);
+      this.noChangeBackfire.setHighlights(this);
+      this.changeSuccess.setHighlights(this);
+      this.changeBackfire.setHighlights(this);
+    }
+  }
+  $scope.access_cookie = function(row) {
+    return $scope.cookies[row];
+  }
   $scope.update_cookies = function () {
     $scope.cookies = [];
     $scope.randomSeeds = [];
@@ -228,41 +357,34 @@ app.controller("myCtrl", function ($scope) {
     for (var i = 0; i < $scope.lookahead; i++) {
       var currentSpell = i + $scope.spellsCastTotal;
       Math.seedrandom($scope.seed + "/" + currentSpell);
-      var roll = Math.random();
-      $scope.randomSeeds.push(roll);
+      const allSpells = new Array(10);
+      for (let ii = 0; ii < 10; ii++) {
+        allSpells[ii] = Math.random();
+      }
 
-      var c = [];
       var cookie1Success = check_cookies(
-        $scope.spellsCastTotal + i,
-        "",
-        false,
+        allSpells,
+        0,
         true,
       );
       var cookie2Success = check_cookies(
-        $scope.spellsCastTotal + i,
-        "",
-        true,
+        allSpells,
+        1,
         true,
       );
-      //cookie3 = check_cookies($scope.spellsCastTotal + i, '', true)
+      //cookie3 = check_cookies(allSpells, '', true)
       var cookie1Backfire = check_cookies(
-        $scope.spellsCastTotal + i,
-        "",
-        false,
+        allSpells,
+        0,
         false,
       );
       var cookie2Backfire = check_cookies(
-        $scope.spellsCastTotal + i,
-        "",
-        true,
+        allSpells,
+        1,
         false,
       );
-      var gambler = check_gambler($scope.spellsCastTotal + i);
-      c.push(cookie1Success);
-      c.push(cookie2Success);
-      c.push(cookie1Backfire);
-      c.push(cookie2Backfire);
-      c.push(gambler);
+      var gambler = check_first_call(allSpells);
+      const c = new CastRow(cookie1Success, cookie1Backfire, cookie2Success, cookie2Backfire, gambler, $scope.cookies.length);
       $scope.cookies.push(c);
 
       if (
@@ -288,6 +410,7 @@ app.controller("myCtrl", function ($scope) {
         skipIndices.push(i);
       }
 
+      continue;
       var arr = [];
       if ($scope.randomSeeds[i] + $scope.backfireChance < 1) {
         arr.push(c[0]);
@@ -327,6 +450,9 @@ app.controller("myCtrl", function ($scope) {
       arr.push(gambler);
       $scope.displayCookies.push(arr);
     }
+    for (let i in $scope.cookies) {
+      $scope.cookies[i].parseHighlights();
+    }
     console.log($scope.cookies);
     console.log(bsIndices);
     console.log(skipIndices);
@@ -365,6 +491,7 @@ app.controller("myCtrl", function ($scope) {
 
   //want to return shortest, and first sequence for a given combo_length
   //if nothing that satisfies max_spread, shortest will still be filled but first will be empty
+  $scope.comboFinder = false;
   function findCombos(combo_length, max_spread, bsIndices, skipIndices) {
     let shortestDistance = 10000000;
     let shortestStart = -1;
@@ -412,225 +539,345 @@ app.controller("myCtrl", function ($scope) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  function getSpellCost(spellName) {
+  function getSpellCost(spellName, costMult) {
     var spell = $scope.spells[spellName];
     var out = spell.costMin;
     if (spell.costPercent) out += $scope.max_magic * spell.costPercent;
-    out *= Math.floor(1 - 0.1 * $scope.supremeintellect);
+    out *= Math.floor(1 - (costMult ?? (0.1 * $scope.supremeintellect)));
     return out;
   }
 
-  function check_gambler(spellsCast) {
-    Math.seedrandom($scope.seed + "/" + spellsCast);
-
-    var spells = [];
-    var selfCost = getSpellCost("gambler's fever dream");
-    for (var spell in $scope.spells) {
-      if (
-        spell != "gambler's fever dream" &&
-        $scope.magic - selfCost >= getSpellCost(spell) * 0.5
-      )
-        spells.push($scope.spells[spell]);
+  class FirstCallEntry {
+    // GFD and backfiring shares the same RNG call, so we need to store them together
+    constructor(GFDRS) {
+      this.GFDRS = GFDRS;
     }
-    if (spells.length === 0) {
-      return { type: "Not enough mana", icon: "img/img9.png" };
+    parent = null; 
+    setParent(parent) {
+      this.parent = parent;
     }
-    var gfdSpell = choose(spells);
 
-    //simplifying the below cause this isn't patched yet afaict and i'll never be playing with diminished ineptitude backfire
-    var gfdBackfire =
-      gfdSpell.name === "Force the Hand of Fate"
-        ? Math.max(0.5, $scope.backfireChance)
-        : 0.5; /*M.getFailChance(gfdSpell);
-    
-		if(FortuneCookie.detectKUGamblerPatch()) gfdBackfire *= 2;
-		else gfdBackfire = Math.max(gfdBackfire, 0.5);*/
+    get value() {
+      return this.GFDRS;
+    }
 
-    var gamblerSpell = {};
-    gamblerSpell.type = gfdSpell.name;
-    gamblerSpell.hasBs = false;
-    gamblerSpell.hasEf = false;
+    backfires(backfireChance = $scope.baseBackfireChance) {
+      return this.value + backfireChance >= 1;
+    }
 
-    Math.seedrandom($scope.seed + "/" + (spellsCast + 1));
-    if (Math.random() < 1 - gfdBackfire) {
-      gamblerSpell.icon = "img/img10.png";
-      gamblerSpell.backfire = false;
-
-      if (gfdSpell.name == "Force the Hand of Fate") {
-        gamblerSpell.innerCookie1 = check_cookies(
-          spellsCast + 1,
-          "",
-          false,
-          true,
-        );
-        gamblerSpell.innerCookie2 = check_cookies(
-          spellsCast + 1,
-          "",
-          true,
-          true,
-        );
-        gamblerSpell.icon = "img/img8.png";
-
-        gamblerSpell.hasBs =
-          gamblerSpell.innerCookie1.type == "Building Special" ||
-          gamblerSpell.innerCookie2.type == "Building Special";
+    /**
+     * @private
+     * @param {*} magic 
+     * @param {*} maxMagic 
+     * @param {*} costMult 
+     */
+    GFDOutcome(magic = $scope.magic, maxMagic = $scope.max_magic, costMult = 1 - $scope.supremeintellect * 0.1) {
+      const selfCost = getSpellCost("gambler's fever dream", costMult);
+      if (magic < selfCost) {
+        return null;
+      }
+      let pool = [];
+      for (let i in $scope.spells) {
+        const spell = $scope.spells[i];
+        const cost = 0.5 * Math.floor(costMult * (spell.costMin + spell.costPercent * maxMagic)) + selfCost;
+        if (cost <= magic) {
+          pool.push(spell);
+        }
+      }
+      
+      if (pool.length === 0) {
+        return null;
       }
 
-      //TODO: Do something with edifice to make it clear if it will fail or not. like this:
-      //if(gfdSpell.name == "Spontaneous Edifice") spellOutcome += ' (' + FortuneCookie.gamblerEdificeChecker(spellsCast + 1, true) + ')';
-    } else {
-      gamblerSpell.icon = "img/img11.png";
-      gamblerSpell.backfire = true;
-
-      if (gfdSpell.name == "Force the Hand of Fate") {
-        gamblerSpell.innerCookie1 = check_cookies(
-          spellsCast + 1,
-          "",
-          false,
-          false,
-        );
-        gamblerSpell.innerCookie2 = check_cookies(
-          spellsCast + 1,
-          "",
-          true,
-          false,
-        );
-        gamblerSpell.icon = "img/img9.png";
-
-        gamblerSpell.hasEf =
-          gamblerSpell.innerCookie1.type == "Elder Frenzy" ||
-          gamblerSpell.innerCookie2.type == "Elder Frenzy";
-      }
-
-      //TODO: again, handle spontaneous edifice
-      //if(gfdSpell.name == "Spontaneous Edifice") spellOutcome += ' (' + FortuneCookie.gamblerEdificeChecker(spellsCast + 1, false) + ')';
+      const selectedIndex = Math.floor(this.value * pool.length);
+      return pool[selectedIndex];
     }
 
-    gamblerSpell.hover =
-      gamblerSpell.innerCookie1 && gamblerSpell.innerCookie1.type
-        ? gamblerSpell.innerCookie1.type + "; " + gamblerSpell.innerCookie2.type
-        : gamblerSpell.type;
-    return gamblerSpell;
+    GFDOutcomeText(magic, maxMagic, costMult) {
+      return this.GFDOutcome(magic, maxMagic, costMult)?.name ?? "Not enough mana";
+    }
+
+    GFDOutcomeIcon(backfires, magic, maxMagic, costMult) {
+      const outcome = this.GFDOutcome(magic, maxMagic, costMult);
+      if (!outcome) { return 'img/img9.png'; }
+      if (!backfires) {
+        if (outcome === $scope.spells["hand of fate"]) {
+          return 'img/img8.png';
+        }
+        return 'img/img10.png';
+      } else {
+        if (outcome === $scope.spells["hand of fate"]) {
+          return 'img/img9.png';
+        }
+        return 'img/img11.png';
+      }
+    }
+
+    onHover(relevantRow) {
+      // Show possible outcomes, if it is a FtHoF
+      if (this.GFDOutcome() === $scope.spells["hand of fate"]) {
+        // Show possible outcomes
+        /**
+         * @type {CastRow}
+         */
+        const castRow = relevantRow;
+        return castRow.stringifyNoChange($scope.baseBackfireChance) + '; ' + castRow.stringifyChange($scope.baseBackfireChance);
+      }
+      return this.GFDOutcomeText();
+    }
+
+    highlightsCSS = '';
+    highlights = [];
+    setHighlights(castRow, allRows = $scope.cookies) {
+      this.highlights = computeHighlights(this, castRow, allRows);
+      this.highlightsCSS = generateEqualSplitGradient(this.highlights);
+    }
+    getHighlightColor() {
+      return { backgroundImage: this.highlightsCSS };
+    }
   }
+  function check_first_call(calls) {
+    return new FirstCallEntry(calls[0]);
+  }
+  $scope.getMarginDividers = function() {
+    return `<md-divider class="margined"></md-divider>`;
+  }
+  $scope.getFooter = function(innerHTML) {
+    return `<small class="footer">${innerHTML}</small>`
+  }
+  $scope.hideTooltips = false;
+  $scope.shiftEventListenerCheck = e => {
+    $scope.hideTooltips = e.shiftKey;
+    document.documentElement.style.setProperty('--cast-tooltip-style', $scope.hideTooltips?'none':'block');
+    console.log(e.shiftKey, $scope.hideTooltips);
+  }
+  document.addEventListener('keydown', $scope.shiftEventListenerCheck);
+  document.addEventListener('keyup', $scope.shiftEventListenerCheck);
 
-  function check_cookies(spells, season, chime, forcedGold) {
-    Math.seedrandom($scope.seed + "/" + spells);
-    var roll = Math.random();
-    if (
-      forcedGold !== false &&
-      (forcedGold ||
-        roll <
-          1 -
-            (0.15 * $scope.on_screen_cookies +
-              0.15 *
-                (1 + 0.1 * $scope.supremeintellect) *
-                (1 - 0.9 * $scope.diminishineptitude)))
-    ) {
-      /* Random is called a few times in setting up the golden cookie */
-      if (chime == 1) Math.random();
-      if (season == "valentines" || season == "easter") {
-        Math.random();
+  // In your controller/directive
+angular.element(window).on('resize', function() {
+  // Force a digest cycle
+  $scope.$applyAsync(function() {
+    // Trigger a fake click or reflow
+    return;
+    var buttons = document.querySelectorAll('.cast-tooltip');
+    console.log(buttons);
+    buttons.forEach(function(btn) {
+      // Method 1: Force browser reflow
+      void btn.offsetHeight;
+      
+      // Method 2: Trigger library's internal update if accessible
+      if (angular.element(btn).controller) {
+        // Some libraries expose update methods
+        angular.element(btn).controller().updateLayout();
       }
-      Math.random();
-      Math.random();
-      /**/
+    });
+  });
+  
+  // Fallback: delay to let browser finish resize
+  setTimeout(function() {
+    $scope.$applyAsync();
+  }, 50);
+});
 
-      var choices = [];
-      choices.push("Frenzy", "Lucky");
-      if (!$scope.dragonflight) choices.push("Click Frenzy");
-      if (Math.random() < 0.1)
-        choices.push("Cookie Storm", "Cookie Storm", "Blab");
-      if (Math.random() < 0.25) choices.push("Building Special");
-      if (Math.random() < 0.15) choices = ["Cookie Storm Drop"];
-      if (Math.random() < 0.0001) choices.push("Free Sugar Lump");
-      var cookie = {};
-      cookie.wrath = false;
-      cookie.type = choose(choices);
-      cookie.icon = $scope.change_icons
-        ? cookie.type === "Cursed Finger" ||
-          cookie.type === "Clot" ||
-          cookie.type === "Cookie Storm"
-          ? "img/img6.png"
-          : cookie.type === "Elder Frenzy"
-            ? "img/img2.png"
-            : cookie.type === "Building Special" ||
-                cookie.type === "Click Frenzy"
-              ? "img/img3.png"
-              : cookie.type === "Frenzy"
-                ? "img/img4.png"
-                : "img/img5.png"
-        : "img/GoldCookie.png";
-      if (cookie.type == "Frenzy")
-        cookie.description = "Gives x7 cookie production for 77 seconds.";
-      if (cookie.type == "Lucky")
-        cookie.description =
-          "Gain 13 cookies, plus the lesser of 15% of bank or 15 minutes of production.";
-      if (cookie.type == "Click Frenzy")
-        cookie.description = "Gives x777 cookies per click for 13 seconds.";
-      if (cookie.type == "Blab")
-        cookie.description = "Does nothing but contains a funny message.";
-      if (cookie.type == "Cookie Storm")
-        cookie.description =
-          "Golden cookies fill the screen, each granting you 1 to 7 minutes worth of cookies.";
-      if (cookie.type == "Cookie Storm Drop")
-        cookie.description = "Grants 1 to 7 minutes worth of production.";
-      if (cookie.type == "Building Special") {
-        cookie.description =
-          "Get a variable bonus to cookie production for 30 seconds.";
-        cookie.noteworthy = true;
+  class EffectEntry {
+    // Interface
+    static _name = 'Unknown effect';
+    static _description = 'Unknown description';
+    static _customIcon = '';
+    static _shorthand = '';
+    static _aliases = new Set();
+    static _settings = {
+      // Customized by user
+      hiddenIndicator: false, // Whether to show its shorthand if it is inaccessible due to incorrect backfiring status
+      underlined: false, // Whether to underline the buff OR the shorthand (if shown)
+    }
+    constructor() {
+
+    }
+
+    get name() { return this.constructor._name; }
+    get description() { return this.constructor._description; }
+    get icon() { return $scope.change_icons?this.constructor._customIcon:null; }
+    get shorthand() { return this.constructor._shorthand; }
+    get aliases() { return this.constructor._aliases; }
+    get settings() { return this.constructor._settings; }
+    getIcon(backfiring) { 
+      if (!backfiring) {
+        return this.icon ?? 'img/GoldCookie.png';
+      } else {
+        return this.icon ?? 'img/WrathCookie.png';
       }
-      if (cookie.type == "Free Sugar Lump")
-        cookie.description = "Gives you a free sugar lump.";
-      return cookie;
+    }
+    is(thing) {
+      return (this instanceof thing) || this.aliases.has(thing);
+    }
+
+    toString(withHighlights) {
+      if (withHighlights) {
+        return '<span style="background-image: ' + this.highlightsCSS + '">' + this.name + '</span>'
+      }
+      return this.name;
+    }
+
+    getTooltip() {
+      return `
+        <small>${this.description}</small>
+      `;
+    }
+    getSecondaryTooltip() {
+      return `
+
+      `
+    }
+
+    highlightsCSS = '';
+    highlights = [];
+    setHighlights(castRow, allRows = $scope.cookies) {
+      this.highlights = computeHighlights(this, castRow, allRows);
+      this.highlightsCSS = generateEqualSplitGradient(this.highlights);
+    }
+    getHighlightColor() {
+      return { backgroundImage: this.highlightsCSS };
+    }
+  }
+  const allEffects = {};
+  class EffectEntryFactory {
+    static create(fromConfigs) {
+      const Effect = class extends EffectEntry {
+        static _name = fromConfigs.name;
+        static _description = fromConfigs.description ?? '???';
+        static _customIcon = fromConfigs.icon ?? 'img/GoldCookie.png';
+        static _shorthand = fromConfigs.shorthand ?? fromConfigs.name.toUpperCase();
+        static _aliases = new Set(fromConfigs.aliases.concat(fromConfigs.name.toLowerCase()) ?? [fromConfigs.name.toLowerCase()]);
+        static _settings = Object.create(fromConfigs.settings ?? {});
+        constructor(...args) {
+          super();
+          if (args.length < (fromConfigs.requiredArgsCount ?? 0)) { throw new Error('Missing arguments for effect entry ' + fromConfigs.name); }
+          if (fromConfigs.constructor) {
+            fromConfigs.constructor.apply(this, args);
+          }
+        }
+      }
+      return Effect;
+    }
+  }
+  allEffects['Frenzy'] = EffectEntryFactory.create({
+    name: 'Frenzy',
+    description: 'Gives x7 cookie production for 77 seconds.',
+    icon: 'img/img4.png',
+    shorthand: 'F',
+    aliases: ['f']
+  });
+  allEffects['Lucky'] = EffectEntryFactory.create({
+    name: 'Lucky',
+    description: 'Gain 13 cookies, plus the lesser of 15% of bank or 15 minutes of production.',
+    icon: 'img/img5.png',
+    shorthand: 'L',
+    aliases: ['l']
+  });
+  allEffects['Click Frenzy'] = EffectEntryFactory.create({
+    name: 'Click Frenzy',
+    description: 'Gives x777 cookies per click for 13 seconds.',
+    icon: 'img/img3.png',
+    shorthand: 'CF',
+    aliases: ['cf']
+  });
+  allEffects['Blab'] = EffectEntryFactory.create({
+    name: 'Blab',
+    description: 'Does nothing but contains a funny message.',
+    icon: 'img/img5.png',
+    shorthand: 'BLAB',
+    aliases: ['b']
+  });
+  allEffects['Cookie Storm'] = EffectEntryFactory.create({
+    name: 'Cookie Storm',
+    description: 'Golden cookies fill the screen, each granting you 1 to 7 minutes worth of cookies.',
+    icon: 'img/img6.png',
+    shorthand: 'CS',
+    aliases: ['cs', 'storm']
+  });
+  allEffects['Cookie Storm Drop'] = EffectEntryFactory.create({
+    name: 'Cookie Storm Drop',
+    description: 'Grants 1 to 7 minutes worth of production.',
+    icon: 'img/img5.png',
+    shorthand: 'CSD',
+    aliases: ['csd', 'storm drop', 'drop', 'cs drop'],
+    requiredArgsCount: 1,
+    constructor(calls) {
+      this.sizeMult = calls[9];
+    }
+  });
+  allEffects['Building Special'] = EffectEntryFactory.create({
+    name: 'Building Special',
+    description: 'Get a variable bonus to cookie production for 30 seconds.',
+    icon: 'img/img3.png',
+    shorthand: 'BS',
+    aliases: ['bs'],
+    settings: {
+      hiddenIndicator: true
+    }
+  });
+  allEffects['Free Sugar Lump'] = EffectEntryFactory.create({
+    name: 'Free Sugar Lump',
+    description: 'Gives you a free sugar lump.',
+    icon: 'img/img5.png',
+    shorthand: 'LUMP',
+    aliases: ['sweet', 'sweet!', 'lump', 'sugar lump']
+  });
+  allEffects['Clot'] = EffectEntryFactory.create({
+    name: 'Clot',
+    description: 'Reduce production by 50% for 66 seconds.',
+    icon: 'img/img6.png',
+    shorthand: 'CLOT',
+    aliases: []
+  });
+  allEffects['Ruin'] = EffectEntryFactory.create({
+    name: 'Ruin',
+    description: 'Lose 13 cookies plus the lesser of 5% of bank or 15 minutes of production.',
+    icon: 'img/img5.png',
+    shorthand: 'RUIN',
+    aliases: []
+  });
+  allEffects['Cursed Finger'] = EffectEntryFactory.create({
+    name: 'Cursed Finger',
+    description: 'Cookie production halted for 10 seconds, but each click is worth 10 seconds of production.',
+    icon: 'img/img6.png',
+    shorthand: 'CUF',
+    aliases: ['cuf']
+  });
+  allEffects['Elder Frenzy'] = EffectEntryFactory.create({
+    name: 'Elder Frenzy',
+    description: 'Gives x666 cookie production for 6 seconds.',
+    icon: 'img/img2.png',
+    shorthand: 'EF',
+    aliases: ['ef', 'elder', 'blood frenzy'],
+    settings: {
+      hiddenIndicator: true
+    }
+  });
+  function check_cookies(calls, changes, forcedGold) {
+    let n = 2 + changes;
+    
+    if (forcedGold) {
+      let choices = [];
+      choices.push(allEffects.Frenzy, allEffects.Lucky);
+      if (!$scope.dragonflight) choices.push(allEffects["Click Frenzy"]);
+      if (calls[++n] < 0.1)
+        choices.push(allEffects["Cookie Storm"], allEffects["Cookie Storm"], allEffects.Blab);
+      if (calls[++n] < 0.25) choices.push(allEffects["Building Special"]);
+      if (calls[++n] < 0.15) choices = [allEffects["Cookie Storm Drop"]];
+      if (calls[++n] < 0.0001) choices.push(allEffects["Free Sugar Lump"]);
+      const type = choose(choices);
+      return new type(calls);
     } else {
-      /* Random is called a few times in setting up the golden cookie */
-      if (chime == 1) Math.random();
-      if (season == "valentines" || season == "easter") {
-        Math.random();
-      }
-      Math.random();
-      Math.random();
-      /**/
-
-      var choices = [];
-      choices.push("Clot", "Ruin");
-      if (Math.random() < 0.1) choices.push("Cursed Finger", "Elder Frenzy");
-      if (Math.random() < 0.003) choices.push("Free Sugar Lump");
-      if (Math.random() < 0.1) choices = ["Blab"];
-      var cookie = {};
-      cookie.wrath = true;
-      cookie.type = choose(choices);
-      cookie.icon = $scope.change_icons
-        ? cookie.type === "Cursed Finger" ||
-          cookie.type === "Clot" ||
-          cookie.type === "Cookie Storm"
-          ? "img/img6.png"
-          : cookie.type === "Elder Frenzy"
-            ? "img/img2.png"
-            : cookie.type === "Building Special" ||
-                cookie.type === "Click Frenzy"
-              ? "img/img3.png"
-              : cookie.type === "Frenzy"
-                ? "img/img4.png"
-                : "img/img5.png"
-        : "img/WrathCookie.png";
-      if (cookie.type == "Clot")
-        cookie.description = "Reduce production by 50% for 66 seconds.";
-      if (cookie.type == "Ruin")
-        cookie.description =
-          "Lose 13 cookies plus the lesser of 5% of bank or 15 minutes of production.";
-      if (cookie.type == "Cursed Finger")
-        cookie.description =
-          "Cookie production halted for 10 seconds, but each click is worth 10 seconds of production.";
-      if (cookie.type == "Blab")
-        cookie.description = "Does nothing but has a funny message.";
-      if (cookie.type == "Elder Frenzy") {
-        cookie.description = "Gives x666 cookie production for 6 seconds.";
-        cookie.noteworthy = true;
-      }
-      if (cookie.type == "Free Sugar Lump")
-        cookie.description = "Gives you a free sugar lump.";
-      return cookie;
+      let choices = [];
+      choices.push(allEffects.Clot, allEffects.Ruin);
+      if (Math.random() < 0.1) choices.push(allEffects["Cursed Finger"], allEffects["Elder Frenzy"]);
+      if (Math.random() < 0.003) choices.push(allEffects["Free Sugar Lump"]);
+      if (Math.random() < 0.1) choices = [allEffects.Blab];
+      const type = choose(choices);
+      return new type(calls);
     }
   }
 
@@ -639,6 +886,7 @@ app.controller("myCtrl", function ($scope) {
       name: "Conjure Baked Goods",
       desc: "Summon half an hour worth of your CpS, capped at 15% of your cookies owned.",
       failDesc: "Trigger a 15-minute clot and lose 15 minutes of CpS.",
+      aliases: ['cbg'],
       icon: [21, 11],
       costMin: 2,
       costPercent: 0.4,
@@ -689,6 +937,7 @@ app.controller("myCtrl", function ($scope) {
       name: "Force the Hand of Fate",
       desc: "Summon a random golden cookie. Each existing golden cookie makes this spell +15% more likely to backfire.",
       failDesc: "Summon an unlucky wrath cookie.",
+      aliases: ['fthof'],
       icon: [22, 11],
       costMin: 10,
       costPercent: 0.6,
@@ -737,6 +986,7 @@ app.controller("myCtrl", function ($scope) {
       desc: "All active buffs gain 10% more time (up to 5 more minutes).",
       failDesc:
         "All active buffs are shortened by 20% (up to 10 minutes shorter).",
+      aliases: ['st'],
       icon: [23, 11],
       costMin: 8,
       costPercent: 0.2,
@@ -791,6 +1041,7 @@ app.controller("myCtrl", function ($scope) {
       name: "Spontaneous Edifice",
       desc: "The spell picks a random building you could afford if you had twice your current cookies, and gives it to you for free. The building selected must be under 400, and cannot be your most-built one (unless it is your only one).",
       failDesc: "Lose a random building.",
+      aliases: ['se'],
       icon: [24, 11],
       costMin: 20,
       costPercent: 0.75,
@@ -857,6 +1108,7 @@ app.controller("myCtrl", function ($scope) {
       desc: "Upgrades are 2% cheaper for 1 minute.",
       failDesc:
         "Upgrades are 2% more expensive for an hour.<q>What's that spell? Loadsamoney!</q>",
+      aliases: ['hc', 'hagglers', 'haggler\'s'],
       icon: [25, 11],
       costMin: 10,
       costPercent: 0.1,
@@ -883,6 +1135,7 @@ app.controller("myCtrl", function ($scope) {
       name: "Summon Crafty Pixies",
       desc: "Buildings are 2% cheaper for 1 minute.",
       failDesc: "Buildings are 2% more expensive for an hour.",
+      aliases: ['scp', 'crafty pixies', 'pixies'],
       icon: [26, 11],
       costMin: 10,
       costPercent: 0.2,
@@ -908,6 +1161,7 @@ app.controller("myCtrl", function ($scope) {
     "gambler's fever dream": {
       name: "Gambler's Fever Dream",
       desc: "Cast a random spell at half the magic cost, with twice the chance of backfiring.",
+      aliases: ['gfd'],
       icon: [27, 11],
       costMin: 3,
       costPercent: 0.05,
@@ -969,6 +1223,7 @@ app.controller("myCtrl", function ($scope) {
       name: "Resurrect Abomination",
       desc: "Instantly summon a wrinkler if conditions are fulfilled.",
       failDesc: "Pop one of your wrinklers.",
+      aliases: ['ra'],
       icon: [28, 11],
       costMin: 20,
       costPercent: 0.1,
@@ -1009,6 +1264,7 @@ app.controller("myCtrl", function ($scope) {
       name: "Diminish Ineptitude",
       desc: "Spells backfire 10 times less for the next 5 minutes.",
       failDesc: "Spells backfire 5 times more for the next 10 minutes.",
+      aliases: ['di'],
       icon: [29, 11],
       costMin: 5,
       costPercent: 0.2,
@@ -1033,6 +1289,695 @@ app.controller("myCtrl", function ($scope) {
     },
   };
 
+  const ParsingException = {
+    INVALID_STATEMENT: "INVALID_STATEMENT",
+    INVALID_CONDITION_CHECK: "INVALID_CONDITION_CHECK",
+    MISMATCHED_BRACKETS: "MISMATCHED_BRACKETS",
+    MISSING_ARGUMENT: "MISSING_ARGUMENT",
+    INVALID_ARGUMENT: "INVALID_ARGUMENT",
+    UNEXPECTED_TOKEN: "UNEXPECTED_TOKEN",
+    INVALID_RANGE: "INVALID_RANGE",
+  };
+
+  class StatementType {
+    constructor(name, aliases = [], requiresArg = false) {
+      this.name = name;
+      this.aliases = new Set([name.toLowerCase().replaceAll(' ', '')].concat(Array.from(aliases).map(a => a.toLowerCase().replaceAll(' ', ''))));
+      this.requiresArg = requiresArg;
+    }
+    static type = 'Unknown';
+
+    evaluate(arg, context) {
+      throw new Error("Not implemented");
+    }
+    addAlias(string) {
+      this.aliases.add(string.toLowerCase().replaceAll(' ', ''));
+      this.constructor.ALLOWEDNAMES.add(string.toLowerCase().replaceAll(' ', ''));
+    }
+
+    static register(statement) {
+      this.ALL.add(statement);
+      this.ALLOWEDNAMES.add(statement.name.toLowerCase().replaceAll(' ', ''));
+      for (let alias of statement.aliases) {
+        this.ALLOWEDNAMES.add(alias.toLowerCase().replaceAll(' ', ''));
+      }
+    }
+    static isAllowed(statementStr) {
+      return this.ALLOWEDNAMES.has(statementStr);
+    }
+    static getByName(statementStr) {
+      const str = statementStr.toLowerCase();
+      for (let statement of this.ALL) {
+        if (statement.aliases.has(str)) {
+          return statement;
+        }
+      }
+      return null;
+    }
+
+    static ALL = new Set();
+    static ALLOWEDNAMES = new Set();
+  }
+
+  class EffectStatement extends StatementType {
+    constructor(effect) {
+      super(effect._name, effect._aliases, false);
+      this.effect = effect;
+      if (effect.shorthand) { this.addAlias(effect.shorthand); }
+    }
+    static type = 'Effect';
+
+    evaluate(arg, context) {
+      if (!(context.element instanceof EffectEntry)) { return false; }
+      return context.element.is(this.effect);
+    }
+  }
+
+  class SpellStatement extends StatementType {
+    constructor(spell, internalKey) {
+      super(spell.name, (spell.aliases ?? []).concat(internalKey), false);
+      this.spell = spell;
+    }
+    static type = 'Gambler\'s fever dream spell';
+
+    evaluate(arg, context) {
+      if (!(context.element instanceof FirstCallEntry)) { return false; }
+      return context.element.GFDOutcome()?.name === this.spell.name;
+    }
+  }
+
+  class SpecialStatement extends StatementType {
+    constructor(name, func, aliases = []) {
+      super(name, aliases, true);
+      this.func = func;
+    }
+
+    evaluate(arg, context) {
+      return this.func(arg, context);
+    }
+  }
+
+  for (let effectName in allEffects) {
+    const effect = allEffects[effectName];
+    StatementType.register(new EffectStatement(effect));
+  }
+  for (let spellName in $scope.spells) {
+    const spell = $scope.spells[spellName];
+    StatementType.register(new SpellStatement(spell, spellName));
+  }
+  StatementType.register(new SpecialStatement('EFFECT', (arg, context) => {
+    return context.element instanceof EffectEntry;
+  }));
+  StatementType.register(new SpecialStatement('GFDOUTCOME', (arg, context) => {
+    return context.element instanceof FirstCallEntry;
+  }));
+
+  class Token {
+    check(context) {
+      throw new Error("Not implemented");
+    }
+  }
+
+  class StatementToken extends Token {
+    constructor(statement, args = null) {
+      super();
+      if (!StatementType.isAllowed(statement.toLowerCase())) {
+        throw { type: ParsingException.INVALID_STATEMENT, statement };
+      }
+      const def = StatementType.getByName(statement.toLowerCase());
+      if (def.requiresArg && arg === null) {
+        throw { type: ParsingException.MISSING_ARGUMENT, statement };
+      }
+      this.statement = statement;
+      this.args = args;
+      this.statementType = def;
+    }
+    static type = 'statement';
+
+    check(context) {
+      return this.statementType.evaluate(this.args[0], context);
+    }
+  }
+
+  class ConditionCheckToken extends Token {
+    constructor(id, index = null) {
+      super();
+      if (!$scope.highlightConditions.has(id)) {
+        throw { type: ParsingException.INVALID_CONDITION_CHECK, id };
+      }
+      this.id = id;
+      this.indexMod = parseInt(index);
+    }
+    static type = 'condition_check';
+
+    check(context) {
+      const condition = $scope.highlightConditions.get(this.id);
+      const newRow = context.allRows[context.castRow.index + (this.indexMod ?? 0)];
+      if (!newRow) { return false; }
+      return condition && (condition.check({
+        allRows: context.allRows,
+        castRow: newRow,
+        element: newRow.firstCall
+      }) || condition.check({
+        allRows: context.allRows,
+        castRow: newRow,
+        element: newRow.noChangeSuccess
+      }) || condition.check({
+        allRows: context.allRows,
+        castRow: newRow,
+        element: newRow.noChangeBackfire
+      }) || condition.check({
+        allRows: context.allRows,
+        castRow: newRow,
+        element: newRow.changeSuccess
+      }) || condition.check({
+        allRows: context.allRows,
+        castRow: newRow,
+        element: newRow.changeBackfire
+      }));
+    }
+  }
+
+  class RangeToken extends Token {
+    constructor(num1, num2) {
+      super();
+      if (num1 < 0 || num2 < 0) {
+        throw { type: ParsingException.INVALID_RANGE, message: "Range numbers must be positive" };
+      }
+      if (num2 <= num1) {
+        throw { type: ParsingException.INVALID_RANGE, message: "Second number must be greater than first number" };
+      }
+      this.lower = num1;
+      this.upper = num2;
+    }
+    static type = 'range';
+
+    check(context) {
+      // Empty implementation
+      return (context.element instanceof FirstCallEntry) && (context.element.GFDRS < this.upper) && (context.element.GFDRS >= this.lower);
+    }
+  }
+
+  class GroupToken extends Token {
+    constructor(tokens) {
+      super();
+      this.tokens = tokens;
+    }
+    static type = 'group';
+
+    check(context) {
+      return this.tokens.check(context);
+    }
+  }
+
+  class BinaryOpToken extends Token {
+    constructor(left, operator, right) {
+      super();
+      this.left = left;
+      this.operator = operator; // "&", "|"
+      this.right = right;
+    }
+    static type = 'binary_op';
+
+    check(context) {
+      if (this.operator === "&") {
+        return this.left.check(context) && this.right.check(context);
+      } else if (this.operator === "|") {
+        return this.left.check(context) || this.right.check(context);
+      }
+      return false;
+    }
+  }
+
+  class UnaryOpToken extends Token {
+    constructor(operator, operand) {
+      super();
+      this.operator = operator; // "!"
+      this.operand = operand;
+    }
+    static type = 'unary_op';
+
+    check(context) {
+      if (this.operator === "!") {
+        return !this.operand.check(context);
+      }
+      return false;
+    }
+  }
+
+  function parseNumber(str) {
+    // Parse decimal or fraction (e.g., "0.5" or "1/2")
+    if (str.includes('/')) {
+      const parts = str.split('/');
+      if (parts.length !== 2) {
+        throw { type: ParsingException.INVALID_RANGE, message: "Invalid fraction format" };
+      }
+      const num = parseFloat(parts[0]);
+      const denom = parseFloat(parts[1]);
+      if (isNaN(num) || isNaN(denom) || denom === 0) {
+        throw { type: ParsingException.INVALID_RANGE, message: "Invalid fraction values" };
+      }
+      return num / denom;
+    } else {
+      const num = parseFloat(str);
+      if (isNaN(num)) {
+        throw { type: ParsingException.INVALID_RANGE, message: "Invalid number format" };
+      }
+      return num;
+    }
+  }
+
+  function tokenizeCondition(str) {
+    str = str.replace(/\s+/g, ""); // Strip whitespace
+    const tokens = [];
+    let i = 0;
+
+    while (i < str.length) {
+      const char = str[i];
+
+      if (char === "(") {
+        tokens.push({ type: "LPAREN", value: "(" });
+        i++;
+      } else if (char === ")") {
+        tokens.push({ type: "RPAREN", value: ")" });
+        i++;
+      } else if (char === "&") {
+        tokens.push({ type: "OP", value: "&" });
+        i++;
+      } else if (char === "|") {
+        tokens.push({ type: "OP", value: "|" });
+        i++;
+      } else if (char === "!") {
+        tokens.push({ type: "NOT", value: "!" });
+        i++;
+      } else if (char === "{") {
+        // Parse range {number1-number2}
+        let j = i + 1;
+        while (j < str.length && str[j] !== "}") j++;
+        if (j >= str.length) {
+          throw { type: ParsingException.UNEXPECTED_TOKEN, message: "Missing closing brace for range" };
+        }
+        const rangeStr = str.substring(i + 1, j);
+        const dashIndex = rangeStr.lastIndexOf('-');
+        if (dashIndex === -1 || dashIndex === 0) {
+          throw { type: ParsingException.INVALID_RANGE, message: "Invalid range format" };
+        }
+        const num1Str = rangeStr.substring(0, dashIndex);
+        const num2Str = rangeStr.substring(dashIndex + 1);
+        const num1 = parseNumber(num1Str);
+        const num2 = parseNumber(num2Str);
+        tokens.push({ type: "RANGE", value: [num1, num2] });
+        i = j + 1;
+      } else if (/[a-zA-Z_\:\']/.test(char)) {
+        // Parse identifier
+        let j = i;
+        while (j < str.length && /[a-zA-Z0-9-_\:\']/.test(str[j])) j++;
+        const identifier = str.substring(i, j).split(':');
+        tokens.push({ type: "IDENT", value: identifier[0], args: identifier.slice(1) });
+        i = j;
+      } else if (/[0-9]/.test(char)) {
+        // Parse number
+        let j = i;
+        while (j < str.length && /[0-9]/.test(str[j])) j++;
+        const number = parseInt(str.substring(i, j), 10);
+        tokens.push({ type: "NUM", value: number });
+        i = j;
+      } else {
+        throw { type: ParsingException.UNEXPECTED_TOKEN, char, position: i };
+      }
+    }
+    return tokens;
+  }
+
+  function parseExpression(tokens, pos = 0) {
+    const result = parseOr(tokens, pos);
+    return result;
+  }
+
+  function parseOr(tokens, pos) {
+    let left = parseAnd(tokens, pos);
+    pos = left.pos;
+
+    while (pos < tokens.length && tokens[pos].type === "OP" && tokens[pos].value === "|") {
+      pos++; // consume |
+      const right = parseAnd(tokens, pos);
+      pos = right.pos;
+      left = { node: new BinaryOpToken(left.node, "|", right.node), pos };
+    }
+    return left;
+  }
+
+  function parseAnd(tokens, pos) {
+    let left = parseNot(tokens, pos);
+    pos = left.pos;
+
+    while (pos < tokens.length && tokens[pos].type === "OP" && tokens[pos].value === "&") {
+      pos++; // consume &
+      const right = parseNot(tokens, pos);
+      pos = right.pos;
+      left = { node: new BinaryOpToken(left.node, "&", right.node), pos };
+    }
+    return left;
+  }
+
+  function parseNot(tokens, pos) {
+    if (pos < tokens.length && tokens[pos].type === "NOT") {
+      pos++; // consume !
+      const operand = parseNot(tokens, pos);
+      return {
+        node: new UnaryOpToken("!", operand.node),
+        pos: operand.pos,
+      };
+    }
+    return parsePrimary(tokens, pos);
+  }
+
+  function parsePrimary(tokens, pos) {
+    if (pos >= tokens.length) {
+      throw { type: ParsingException.UNEXPECTED_TOKEN, message: "Unexpected end of expression" };
+    }
+
+    if (tokens[pos].type === "LPAREN") {
+      pos++; // consume (
+      const expr = parseExpression(tokens, pos);
+      pos = expr.pos;
+      if (pos >= tokens.length || tokens[pos].type !== "RPAREN") {
+        throw { type: ParsingException.MISMATCHED_BRACKETS, message: "Missing closing bracket" };
+      }
+      pos++; // consume )
+      return { node: new GroupToken(expr.node), pos };
+    }
+
+    if (tokens[pos].type === "RANGE") {
+      const rangeValues = tokens[pos].value;
+      const node = new RangeToken(rangeValues[0], rangeValues[1]);
+      return { node, pos: pos + 1 };
+    }
+
+    if (tokens[pos].type === "IDENT") {
+      const ident = tokens[pos].value;
+
+      // Check if it's a condition check (reference to another HighlightCondition)
+      if ($scope.highlightConditions.has(ident)) {
+        let index = tokens[pos].args[0] ?? null;
+        return { node: new ConditionCheckToken(ident, index), pos: pos + 1 };
+      }
+
+      // Otherwise it's a statement
+      if (!StatementType.isAllowed(ident.toLowerCase())) {
+        throw { type: ParsingException.INVALID_STATEMENT, statement: ident };
+      }
+
+      const def = StatementType.getByName(ident.toLowerCase());
+
+      pos++;
+
+      return { node: new StatementToken(ident, tokens[pos - 1].args), pos };
+    }
+
+    throw { type: ParsingException.UNEXPECTED_TOKEN, token: tokens[pos], position: pos };
+  }
+
+  class HighlightCondition {
+    constructor(id, conditionsStr, color) {
+      this.id = id;
+      if (StatementType.isAllowed(id)) { 
+        throw { type: ParsingException.INVALID_CONDITION_CHECK, message: `Condition ID "${id}" cannot be the same as a statement name` };
+      }
+      this.color = color ?? null;
+      this.conditionsText = conditionsStr;
+      //this.compile(this.conditionsText);
+    }
+    _enabled = true;
+    _advanced = true;
+
+    static register(condition) {
+      $scope.highlightConditions.set(condition.id, condition);
+      $scope.highlightConditionsList.push({ value: condition.id });
+      this.intId = $scope.highlightConditions.size; // Just a unique integer for this condition, used for ng-repeat tracking
+      return condition;
+    }
+
+    get enabled() {
+      return this._enabled;
+    }
+    set enabled(bool) {
+      this._enabled = bool;
+    }
+    get advanced() { return this._advanced; }
+    set advanced(bool) { this._advanced = bool; }
+
+    compile(conditionsStr = this.conditionsText) {
+      try {
+        const tokens = tokenizeCondition(conditionsStr);
+        //console.log(tokens);
+        const parsed = parseExpression(tokens);
+        if (parsed.pos !== tokens.length) {
+          throw { type: ParsingException.UNEXPECTED_TOKEN, message: "Extra tokens after expression" };
+        }
+        this.ast = parsed.node;
+        this.parseError = null;
+      } catch (error) {
+        this.parseError = error;
+        this.ast = null;
+      }
+    }
+
+    // Context: allRows, castRow, element
+    check(context) {
+      if (this.parseError) {
+        return false;
+      }
+      if (!this.ast) {
+        return false;
+      }
+      return this.ast.check(context);
+    }
+
+    save() {
+      return {
+        id: this.id,
+        conditionsText: this.conditionsText,
+        color: this.color
+      }
+    }
+    static load(object) {
+      return HighlightCondition.register(new HighlightCondition(object.id, object.conditionsText, object.color));
+    }
+  }
+  $scope.highlightConditions = new Map();
+  $scope.highlightConditionsList = [];
+  $scope.reindexAllConditions = function() {
+    for (let [key, condition] of $scope.highlightConditions) {
+      condition.intId = $scope.highlightConditionsList.reduce((acc, cur, i) => { if (cur.value === condition.id) { return i; } return acc; }, -1);
+      condition.compile();
+    }
+  }
+
+  /**
+ * Generates a CSS linear-gradient string that divides the background into
+ * equal-width vertical slices, one per color, using hard stops.
+ *
+ * @param {string[]} colors - Array of CSS color strings (e.g., ['red', '#00ff00', 'rgb(0,0,255)'])
+ * @returns {string} - CSS linear-gradient value (e.g., "linear-gradient(to right, red 0%, red 25%, ...)")
+ */
+  function generateEqualSplitGradient(colors) {
+    if (!Array.isArray(colors) || colors.length === 0) {
+      return '';
+    }
+
+    // Single color: still return a valid gradient (or could be simplified, but gradient works)
+    if (colors.length === 1) {
+      return `linear-gradient(to right, ${colors[0]}, ${colors[0]})`;
+    }
+
+    const n = colors.length;
+    const stops = [];
+
+    for (let i = 0; i < n; i++) {
+      const startPercent = (i / n) * 100;
+      const endPercent = ((i + 1) / n) * 100;
+
+      // Hard transition: color at startPercent, same color at endPercent
+      stops.push(`${colors[i]} ${startPercent}%`);
+      stops.push(`${colors[i]} ${endPercent}%`);
+    }
+
+    return `linear-gradient(to right, ${stops.join(', ')})`;
+  }
+
+  function computeHighlights(element, castRow, allRows) {
+    const context = { element, castRow, allRows };
+    const colors = [];
+    for (const [key, condition] of $scope.highlightConditions.entries()) {
+      if (condition.enabled && condition.check(context)) {
+        if (condition.color) { colors.push(condition.color); }
+      }
+    }
+    return colors;
+  }
+
+  function constructDefaultHighlightConditions() {
+    $scope.highlightConditions.clear();
+    $scope.highlightConditionsList = [];
+    HighlightCondition.register(new HighlightCondition('isBS', 'Building Special', '#ffff00'));
+    HighlightCondition.register(new HighlightCondition('isEF', 'Elder Frenzy', '#ffff00'));
+    HighlightCondition.register(new HighlightCondition('isRA', 'Resurrect Abomination', '#add8e6'));
+    HighlightCondition.register(new HighlightCondition('isSE', 'Spontaneous Edifice', '#add8e6'));
+    HighlightCondition.register(new HighlightCondition('FtHoFHighlight', 'Force the Hand of Fate & (isBS:1 | isEF:1)', '#ffff00'));
+    for (let [id, condition] of $scope.highlightConditions) {
+      condition.compile();
+    }
+  }
+  LocalStorageManager.register(new LocalStorageManager('highlights', {
+    firstLoad: constructDefaultHighlightConditions,
+    save: () => { return { conditions: ($scope.highlightConditionsList).map(e => $scope.highlightConditions.get(e.value).save()) } },
+    load: obj => {
+      $scope.highlightConditions.clear();
+      $scope.highlightConditionsList = [];
+      for (let i in obj.conditions) {
+        HighlightCondition.load(obj.conditions[i]);
+      }
+      for (let [id, condition] of $scope.highlightConditions) {
+        condition.compile();
+      }
+    }
+  }));
+
+  $scope.highlightRearrangementEnabled = false;
+  $scope.toggleRearrangementMode = function() {
+    $scope.highlightRearrangementEnabled = !$scope.highlightRearrangementEnabled;
+    if (!$scope.highlightRearrangementEnabled) { 
+      $scope.reindexAllConditions();
+    }
+    LocalStorageManager.get('highlights').save();
+  }
+
+  $scope.highlightSettingsExpanded = false;
+  $scope.advancedModeEnabled = false;
+  $scope.availableStatements = Array.from(StatementType.ALL);
+  $scope.removeHighlightCondition = function(condition) {
+    const id = condition.id;
+    $scope.highlightConditions.delete(id);
+    const index = $scope.highlightConditionsList.reduce((acc, cur, i) => { if (cur.value === id) { return i; } return acc; }, -1);
+    if (index > -1) {
+      $scope.highlightConditionsList.splice(index, 1);
+    }
+    LocalStorageManager.get('highlights').save();
+  }
+  $scope.addHighlightCondition = function() {
+    const newId = prompt("Enter a unique ID for this highlight condition (used for referencing in conditions, no spaces, only letters numbers and underscore):");
+    if (!newId) { return; }
+    if ($scope.highlightConditions.has(newId) || StatementType.isAllowed(newId)) {
+      alert("ID already in use as a condition or statement name. Please choose a different one.");
+      return;
+    }
+    if (!newId || newId.match(/[^a-zA-Z0-9_]|\s/)) { 
+      alert("Invalid ID name. ID name must only contain letters, numbers, underscores, cannot be empty, and cannot contain whitespace. Please choose a different one.");
+      return;
+    }
+    const highlight = HighlightCondition.register(new HighlightCondition(newId, 'Frenzy'));
+    highlight.compile();
+    LocalStorageManager.get('highlights').save();
+  }
+  $scope.updateConditionId = function(oldId, newId) {
+    if (oldId === newId) { return; }
+    const condition = $scope.highlightConditions.get(oldId);
+    if ($scope.highlightConditions.has(newId) || StatementType.isAllowed(newId) || !newId || newId.match(/[^a-zA-Z0-9_]|\s/)) {
+      alert("Invalid ID name. ID name must only contain letters, numbers, underscores, cannot be empty, cannot contain whitespace, and cannot be the names or abbreviations of spells and effects. Please choose a different one.");
+      condition.id = oldId;
+      return oldId;
+    }
+    $scope.highlightConditions.delete(oldId);
+    $scope.highlightConditions.set(newId, condition);
+    const index = $scope.highlightConditionsList.reduce((acc, cur, i) => { if (cur.value === oldId) { return i; } return acc; }, -1);
+    if (index > -1) {
+      $scope.highlightConditionsList[index].value = newId;
+    }
+    for (let [key, cond] of $scope.highlightConditions.entries()) {
+      if (cond.conditionsText.match(new RegExp(`(?<![a-zA-Z0-9_])${oldId.replace(/[.*+?^$\:{}()|[\]\\]/g, '\\$&')}(?![a-zA-Z0-9_])`))) { 
+        $scope.updateConditionExpression(cond, cond.conditionsText.replace(new RegExp(`(?<![a-zA-Z0-9_])${oldId.replace(/[.*+?\:^${}()|[\]\\]/g, '\\$&')}(?![a-zA-Z0-9_])`, 'g'), newId)); // Re-parse to update any references to this condition
+      }
+    }
+    LocalStorageManager.get('highlights').save();
+    return newId;
+  }
+  $scope.updateConditionColor = function(condition, newColor) {
+    if (condition) {
+      condition.color = newColor && newColor.trim().length > 0 ? newColor : null;
+    }
+    LocalStorageManager.get('highlights').save();
+  }
+  $scope.updateConditionStatement = function(condition, statementName) {
+    $scope.updateConditionExpression(condition, statementName);
+  }
+  $scope.updateConditionExpression = function(condition, expressionStr) {
+    if (condition) {
+      condition.conditionsText = expressionStr;
+      condition.compile();
+      LocalStorageManager.get('highlights').save();
+    }
+  }
+  $scope.splitColorAndAlpha = function(colorString) {
+    if (!colorString) {
+      return { color: null, alpha: 1 };
+    }
+    
+    // Handle rgba() format
+    const rgbaMatch = colorString.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\s*\)/);
+    if (rgbaMatch) {
+      const r = rgbaMatch[1];
+      const g = rgbaMatch[2];
+      const b = rgbaMatch[3];
+      const alpha = rgbaMatch[4] ? parseFloat(rgbaMatch[4]) : 1;
+      const rgbColor = `rgb(${r}, ${g}, ${b})`;
+      return { color: rgbColor, alpha: alpha };
+    }
+    
+    // Handle hex format
+    const hexMatch = colorString.match(/^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/);
+    if (hexMatch) {
+      return { color: colorString.substring(0, 8), alpha: 1 };
+    }
+    
+    // Default: assume it's just a color string
+    return { color: colorString, alpha: 1 };
+  };
+  $scope.test = e => { console.log(e); console.trace(); }
+  $scope.exportHighlights = function() {
+    const highlightData = { conditions: Array.from($scope.highlightConditions.values()).map(e => e.save()) };
+    const jsonString = JSON.stringify(highlightData);
+    navigator.clipboard.writeText(jsonString).then(() => {
+      alert('Highlights copied to clipboard!');
+    }).catch(() => {
+      alert('Failed to copy to clipboard');
+    });
+  }
+  $scope.importHighlights = function() {
+    const jsonString = prompt('Paste your highlights JSON:');
+    if (jsonString === null) return;
+    try {
+      const obj = JSON.parse(jsonString);
+      $scope.highlightConditions.clear();
+      $scope.highlightConditionsList = [];
+      for (let i in obj.conditions) {
+        const cond = HighlightCondition.load(obj.conditions[i]);
+        cond.compile();
+      }
+      alert('Highlights imported successfully!');
+    } catch (error) {
+      alert('Failed to import highlights: ' + error.message);
+    }
+  }
+
+  $scope.advancedHelpVisibility = false;
+  $scope.resetDefaultHighlights = function() {
+    if (confirm("Are you sure you want to reset to the default highlight conditions? This will remove any custom conditions you've created.")) {
+      constructDefaultHighlightConditions();
+      LocalStorageManager.get('highlights').save();
+    }
+  }
+
   var urlParams = new URLSearchParams(window.location.search);
   var seed = urlParams.get("seed");
   if (seed != null && seed.trim().length === 5) {
@@ -1043,4 +1988,7 @@ app.controller("myCtrl", function ($scope) {
     $scope.spellsCastThisAscension = $scope.spellsCastTotal;
     $scope.load_game(null, true);
   }
+
+  LocalStorageManager.loadAll();
+  window.app = $scope;
 });
