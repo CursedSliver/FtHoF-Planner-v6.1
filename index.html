@@ -715,7 +715,14 @@
                                 </md-tooltip>
                             </div>
                         </md-subheader>
-                        <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null" title="{{cookie_list.getCast(true).description}}">
+                        <md-list-item class="md-2-line" 
+                            ng-repeat="cookie_list in cookies" ng-click="null" title="{{cookie_list.getCast(true).description}}"
+                            tooltips 
+                            tooltip-template="{{cookie_list.getCast(true).getTooltip() + getMarginDividers() + (cookie_list.backfiring()?'If it does not backfire: ':'If it backfires: ') + '<b>' + cookie_list.getOtherCast(true).toString(true) + '</b><br>' + cookie_list.getOtherCast(true).getTooltip() + '<br>' + getFooter('Hold SHIFT to hide this menu.')}}" 
+                            tooltip-class="cast-tooltip"
+                            tooltip-side="{{cookie_list.index===0?'bottom':'top'}}"
+                            tooltip-speed="fast"
+                            tooltip-hidden="{{hideTooltips}}">
                             <img ng-src='{{cookie_list.getCast(true).getIcon(cookie_list.firstCall.backfires())}}'
                                  class="md-avatar" alt="Golden Cookie"/>
                             <div class="md-list-item-text"
