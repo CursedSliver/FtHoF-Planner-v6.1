@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap');
+
 :root {
   --cast-tooltip-style: block;
 }
@@ -74,7 +75,7 @@ pre {
 input {
   margin: 8px 2px;
   width: 80px;
-  background-color: rgba(187, 187, 187, 0.1333333333);
+  background-color: #bbb2;
   border: solid 1px #bbb;
   border-radius: 5px;
 }
@@ -106,12 +107,10 @@ md-input-container .md-errors-spacer {
   margin-top: 10px;
   margin-bottom: 0;
 }
-
 md-divider.margined {
   margin-top: 3px;
   margin-bottom: 3px;
 }
-
 small.footer {
   font-size: 25%;
 }
@@ -194,7 +193,6 @@ h3 {
   background-color: #f5f5f5;
   border-radius: 4px;
 }
-
 .highlight-condition-container.rearranging {
   border: 2px solid orange;
 }
@@ -215,7 +213,6 @@ h3 {
   margin: 0;
   padding-right: 30px;
 }
-
 .condition-color {
   width: 100%;
   min-width: 0px;
@@ -226,7 +223,6 @@ h3 {
   margin: 0;
   padding-right: 30px;
 }
-
 .color-input-container {
   display: flex;
   flex-direction: row;
@@ -234,7 +230,6 @@ h3 {
   justify-content: center;
   align-items: center;
 }
-
 .picker-open {
   background: transparent;
   border: none;
@@ -258,7 +253,6 @@ h3 {
 .condition-select.unavailable {
   border: 1px solid #aaa;
 }
-
 .condition-select.in-transit {
   border: 1px solid #aaa;
   background: #ddd;
@@ -328,7 +322,6 @@ h3 {
   padding: 10px;
   border-radius: 5px;
 }
-
 .flipped {
   transform: rotate(180deg);
 }
@@ -340,66 +333,73 @@ h3 {
   z-index: 12379137;
   width: 100%;
 }
-
 tooltip.active:not(._force-hidden) tip {
   /* I love hacking css */
   display: var(--cast-tooltip-style) !important;
 }
-
 .tooltips._bottom,
 .tooltips._top {
   width: 100%;
   /* ik this is extremely hacky but idk how else to make it work (also no, wrapping the tooltiped element doesn't work for some reason */
 }
-
 .cast-column:hover {
   z-index: 99999 !important;
   position: relative;
 }
 
 /* Theming */
+
 #app.dark {
-  background-color: #121212;
-}
-#app.dark .cast-tooltip {
-  background-color: #1f1f1f;
-}
-#app.dark .highlight-condition-container,
-#app.dark .condition-select.in-transit {
-  background-color: #2a2a2a;
-}
-#app.dark .condition-select,
-#app.dark .condition-id,
-#app.dark .condition-color,
-#app.dark input {
-  background-color: #1e1e1e;
-}
-#app.dark,
-#app.dark .cast-tooltip,
-#app.dark .condition-id,
-#app.dark .condition-color,
-#app.dark .condition-select,
-#app.dark table,
-#app.dark th,
-#app.dark td,
-#app.dark input {
-  color: #e0e0e0;
-}
-#app.dark .md-subheader-content,
-#app.dark .md-list-item-text > .ng-binding {
-  color: #e0e0e0;
-}
-#app.dark .block,
-#app.dark .highlights-box,
-#app.dark table,
-#app.dark th,
-#app.dark td {
-  border-color: #444;
-}
-#app.dark .condition-select,
-#app.dark .condition-id,
-#app.dark .condition-color,
-#app.dark .cast-tooltip,
-#app.dark input {
-  border-color: #555;
+  & {
+    background-color: #121212;
+  }
+
+  .cast-tooltip {
+    background-color: #1f1f1f;
+  }
+
+  .highlight-condition-container,
+  .condition-select.in-transit {
+    background-color: #2a2a2a;
+  }
+
+  .condition-select,
+  .condition-id,
+  .condition-color,
+  input {
+    background-color: #1e1e1e;
+  }
+
+  &,
+  .cast-tooltip,
+  .condition-id,
+  .condition-color,
+  .condition-select,
+  table,
+  th,
+  td,
+  input {
+    color: #e0e0e0;
+  }
+
+  .md-subheader-content,
+  .md-list-item-text > .ng-binding {
+    color: #e0e0e0;
+  }
+
+  .block,
+  .highlights-box,
+  table,
+  th,
+  td {
+    border-color: #444;
+  }
+
+  .condition-select,
+  .condition-id,
+  .condition-color,
+  .cast-tooltip,
+  input {
+    border-color: #555;
+  }
 }
