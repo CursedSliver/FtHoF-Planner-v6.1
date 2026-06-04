@@ -120,6 +120,7 @@ var app = angular.module("myApp", ["ngMaterial", "colorPicker", "dndLists", "720
 app.controller("myCtrl", function ($scope) {
   $scope.advancedFeatures = false;
   $scope.unifiedGuideIsOpen = false;
+  $scope.visualOptionsShowing = false;
 
   $scope.seed = "";
   $scope.hasSeed = true;
@@ -856,6 +857,15 @@ angular.element(window).on('resize', function() {
       hiddenIndicator: true
     }
   });
+  $scope.getEffectTooltip = function (cookie_list, change) {
+    const cast = cookie_list;
+    return ($scope.hide_effect_elaboration?'':cookie_list.getCast(change).getTooltip()
+     + $scope.getMarginDividers())
+      + (cookie_list.backfiring() ? 'If it does not backfire: ' : 'If it backfires: ')
+       + '<b>' + cookie_list.getOtherCast(change).toString(true)
+        + '</b>' + ($scope.hide_effect_elaboration?'':'<br>' + cookie_list.getOtherCast(change).getTooltip())
+         + '<br>' + $scope.getFooter('Hold SHIFT to hide this menu.')
+  }
   function check_cookies(calls, changes, forcedGold) {
     let n = 2 + changes;
     
