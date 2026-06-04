@@ -519,7 +519,7 @@ app.controller('myCtrl', function ($scope) {
         processedSoFar += $scope.cookies[i].parseHighlights();
       } 
       if (processedSoFar == prev) { 
-        $scope.highlightingRuntimeErrors = 'RUNTIME ERROR: Was not able to resolve all dependencies (' + processedSoFar + ' / ' + totalProcessCount + '). Check that there are no circular dependencies in your highlight settings.';
+        $scope.highlightingRuntimeErrors = 'RUNTIME ERROR: Was not able to resolve all conditions (' + processedSoFar + ' / ' + totalProcessCount + ') due to unresolvable dependencies. Check that there are no circular dependencies in your highlight settings.';
         break; 
       } // Infinite loop
     }
@@ -656,6 +656,7 @@ app.controller('myCtrl', function ($scope) {
       let pool = [];
       for (let i in $scope.spells) {
         const spell = $scope.spells[i];
+        if (spell === $scope.spells['gambler\'s fever dream']) { continue; }
         const cost =
           0.5 *
             Math.floor(
