@@ -396,6 +396,13 @@ app.controller('myCtrl', function ($scope) {
       this.changeSuccess.setHighlights();
       this.changeBackfire.setHighlights();
     }
+    clearAllHighlights() {
+      this.firstCall.clearHighlights();
+      this.noChangeSuccess.clearHighlights();
+      this.noChangeBackfire.clearHighlights();
+      this.changeSuccess.clearHighlights();
+      this.changeBackfire.clearHighlights();
+    }
   }
   $scope.access_cookie = function (row) {
     return $scope.cookies[row];
@@ -501,6 +508,9 @@ app.controller('myCtrl', function ($scope) {
       $scope.displayCookies.push(arr);
     }
     let processedSoFar = 0;
+    for (let i in $scope.cookies) {
+      $scope.cookies[i].clearAllHighlights();
+    }
     const totalProcessCount = Array.from($scope.highlightConditions.values())
       .reduce((acc, cur, i) => acc + ((!cur.enabled || cur.parseError)?(0):(5 * $scope.cookies.length)), 0);
     while(processedSoFar < totalProcessCount) { 
@@ -509,7 +519,7 @@ app.controller('myCtrl', function ($scope) {
         processedSoFar += $scope.cookies[i].parseHighlights();
       } 
       if (processedSoFar == prev) { 
-        console.log('INFINITE LOOP', processedSoFar, totalProcessCount);
+        $scope.highlightingRuntimeErrors = 'RUNTIME ERROR: Was not able to resolve all dependencies (' + processedSoFar + ' / ' + totalProcessCount + '). Check that there are no circular dependencies in your highlight settings.';
         break; 
       } // Infinite loop
     }
@@ -719,7 +729,7 @@ app.controller('myCtrl', function ($scope) {
         if (this.highlights.has(condition)) { continue; }
         if (!condition.enabled || condition.parseError) { continue; }
         if (!condition.dependenciesResolved(context)) { continue; }
-        this.highlights.set(condition, condition.check(context)?condition.color:'');
+        this.highlights.set(condition, condition.check(context)?condition.color:null);
         processed++;
       }
       return processed;
@@ -846,6 +856,10 @@ app.controller('myCtrl', function ($scope) {
 
     highlightsCSS = '';
     highlights = new Map();
+    clearHighlights() {
+      this.highlights.clear();
+      this.highlightsCSS = '';
+    }
     iterateHighlights(castRow, allRows = $scope.cookies) {
       const context = { element: this, castRow, allRows };
       let processed = 0;
@@ -853,7 +867,7 @@ app.controller('myCtrl', function ($scope) {
         if (this.highlights.has(condition)) { continue; }
         if (!condition.enabled || condition.parseError) { continue; }
         if (!condition.dependenciesResolved(context)) { continue; }
-        this.highlights.set(condition, condition.check(context)?condition.color:'');
+        this.highlights.set(condition, condition.check(context)?condition.color:null);
         processed++;
       }
       return processed;
@@ -1606,31 +1620,11 @@ app.controller('myCtrl', function ($scope) {
       }
       return (
         condition &&
-        (condition.check({
-          allRows: context.allRows,
-          castRow: newRow,
-          element: newRow.firstCall
-        }) ||
-          condition.check({
-            allRows: context.allRows,
-            castRow: newRow,
-            element: newRow.noChangeSuccess
-          }) ||
-          condition.check({
-            allRows: context.allRows,
-            castRow: newRow,
-            element: newRow.noChangeBackfire
-          }) ||
-          condition.check({
-            allRows: context.allRows,
-            castRow: newRow,
-            element: newRow.changeSuccess
-          }) ||
-          condition.check({
-            allRows: context.allRows,
-            castRow: newRow,
-            element: newRow.changeBackfire
-          }))
+        (newRow.firstCall.highlights.get(condition) != null ||
+          newRow.noChangeSuccess.highlights.get(condition) != null ||
+          newRow.noChangeBackfire.highlights.get(condition) != null ||
+          newRow.changeSuccess.highlights.get(condition) != null ||
+          newRow.changeBackfire.highlights.get(condition) != null)
       );
     }
   }
@@ -1931,7 +1925,7 @@ app.controller('myCtrl', function ($scope) {
           message: `Condition ID "${id}" cannot be the same as a statement name`
         };
       }
-      this.color = color ?? null;
+      this.color = color ?? '';
       this.conditionsText = conditionsStr;
       //this.compile(this.conditionsText);
     }
@@ -2001,11 +1995,11 @@ app.controller('myCtrl', function ($scope) {
       for (const [condition, offset] of this.dependencies) {
         const target = context.allRows[context.castRow.index + offset];
         if (!target) { return true; }
-        if (target.firstCall.highlights.has(condition)) return false;
-        if (target.noChangeSuccess.highlights.has(condition)) return false;
-        if (target.noChangeBackfire.highlights.has(condition)) return false;
-        if (target.changeSuccess.highlights.has(condition)) return false;
-        if (target.changeBackfire.highlights.has(condition)) return false;
+        if (!target.firstCall.highlights.has(condition)) return false;
+        if (!target.noChangeSuccess.highlights.has(condition)) return false;
+        if (!target.noChangeBackfire.highlights.has(condition)) return false;
+        if (!target.changeSuccess.highlights.has(condition)) return false;
+        if (!target.changeBackfire.highlights.has(condition)) return false;
       }
       return true;
     }
@@ -2045,6 +2039,7 @@ app.controller('myCtrl', function ($scope) {
       condition.compile();
     }
   };
+  $scope.highlightingRuntimeErrors = '';
 
   /**
    * Generates a CSS linear-gradient string that divides the background into

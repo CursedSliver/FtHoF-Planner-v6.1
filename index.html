@@ -602,7 +602,7 @@
                                 <label style="font-size: 12px; color: #666;">Condition</label>
                                 <div ng-if="!advancedModeEnabled" style="display: flex; gap: 6px;">
                                     <select class="condition-select"
-                                        ng-if="!highlightRearrangementEnabled && (condition.ast.constructor.type === 'statement' || condition.ast.constructor.type === 'condition_check')"
+                                        ng-if="!highlightRearrangementEnabled && (condition.ast.constructor.type === 'statement')"
                                         ng-model="condition.selectedStatement"
                                         ng-change="updateConditionStatement(condition, condition.selectedStatement)"
                                         ng-init="condition.selectedStatement = condition.ast.statementType.name">
@@ -611,7 +611,7 @@
                                             + ' (' + statement.constructor.type + ')'}}</option>
                                     </select>
                                     <div class="condition-select unavailable"
-                                        ng-if="!highlightRearrangementEnabled && !(condition.ast.constructor.type === 'statement' || condition.ast.constructor.type === 'condition_check')">
+                                        ng-if="!highlightRearrangementEnabled && !(condition.ast.constructor.type === 'statement')">
                                         Toggle on advanced mode to modify this condition</div>
                                     <div class="condition-select in-transit" ng-if="highlightRearrangementEnabled"
                                         readonly>{{ condition.conditionsText }}</div>
@@ -844,7 +844,7 @@
         </div>
 
             <md-divider ng-show="hasSeed"></md-divider>
-
+            <div class="condition-error" ng-if="highlightingRuntimeErrors">{{ highlightingRuntimeErrors }}</div>
             <md-divider ng-show="hasSeed"></md-divider>
 
 
