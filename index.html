@@ -3,7 +3,6 @@
 
 <head>
     <!-- Angular Material requires Angular.js Libraries -->
-    <script src="./libraries/jquery-4.0.0.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-animate.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-aria.min.js"></script>
@@ -16,7 +15,6 @@
     <script src="https://cdn.jsdelivr.net/npm/angular-tooltips@1.2.2/dist/angular-tooltips.min.js"></script>
 
     <script defer src="base64.js"></script>
-    <script defer src="color-picker.js"></script>
     <script defer src="index.js"></script>
 
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
@@ -149,16 +147,15 @@
             </p>
             <div class="collapse-content" id="content-4" style="text-align: center;">
                 <div style="text-align: center; width: 100%; margin-bottom: 10px;">
-                    Unified FtHoF guide compiled by CursedSliver. Based on the historical guide made by RebelKeithy,
+                    Unified FtHoF Planner guide compiled by CursedSliver. Based on the historical guide made by RebelKeithy,
                     Skeezy, Mylaaan, and Joseph.
-                    <br>Click the arrow to the right of each panel to open it.
+                    <br>Click each panel to open it.
                 </div>
                 <md-divider></md-divider>
-                <md-toolbar class="md-hue-2">
+                <md-toolbar class="md-hue-2" style="cursor: pointer;" ng-click="guideHidingStatuses[0] = !guideHidingStatuses[0]">
                     <div class="md-toolbar-tools">
                         <h2 flex md-truncate>About the Grimoire</h2>
-                        <md-button class="md-icon-button" aria-label="Toggle visbility of panel"
-                            ng-click="guideHidingStatuses[0] = !guideHidingStatuses[0]">
+                        <md-button class="md-icon-button" aria-label="Toggle visbility of panel">
                             <md-icon md-svg-icon="img/upArrow.svg"
                                 class="{{guideHidingStatuses[0]?'flipped':''}}"></md-icon>
                         </md-button>
@@ -189,11 +186,10 @@
                     </p>
                 </div>
                 <md-divider></md-divider>
-                <md-toolbar class="md-hue-1">
+                <md-toolbar class="md-hue-1" style="cursor: pointer;" ng-click="guideHidingStatuses[1] = !guideHidingStatuses[1]">
                     <div class="md-toolbar-tools">
                         <h2 flex md-truncate>Effect predictions</h2>
-                        <md-button class="md-icon-button" aria-label="Toggle visbility of panel"
-                            ng-click="guideHidingStatuses[1] = !guideHidingStatuses[1]">
+                        <md-button class="md-icon-button" aria-label="Toggle visbility of panel">
                             <md-icon md-svg-icon="img/upArrow.svg"
                                 class="{{guideHidingStatuses[1]?'flipped':''}}"></md-icon>
                         </md-button>
@@ -239,8 +235,85 @@
                             time.</small>
                     </p>
                 </div>
+                <md-divider></md-divider>
+                <md-toolbar class="md-hue-2" style="cursor: pointer;" ng-click="guideHidingStatuses[2] = !guideHidingStatuses[2]">
+                    <div class="md-toolbar-tools">
+                        <h2 flex md-truncate>Terminology</h2>
+                        <md-button class="md-icon-button" aria-label="Toggle visbility of panel">
+                            <md-icon md-svg-icon="img/upArrow.svg"
+                                class="{{guideHidingStatuses[2]?'flipped':''}}"></md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <div class="block" ng-if="guideHidingStatuses[2]">
+                    <p>
+                        Some parts of the table will include some abbrevations, and this is also useful for reading more advanced parts of this guide.
+                        <br>(For example, effects with an abbrevation wrapped in brackets after it indicates useful effects that are normally inaccessible, which you can hover over to view more information.)
+                    </p>
+                    <md-divider></md-divider>
+                    <p>
+                        Below are some useful abbrevations and terms to know for this tool. You don't have to memorize them; you can refer back to this page when needed.
+                    </p>
+                    <md-table><md-table-container><table>
+                        <thead>
+                            <tr>
+                                <th>Term</th>
+                                <th>Proper name</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>FtHoF</td>
+                                <td>Force the Hand of Fate</td>
+                                <td>The second spell in the Grimoire, spawns a custom Golden/Wrath cookie.</td>
+                            </tr>
+                            <tr>
+                                <td>GFD</td>
+                                <td>Gambler's Fever Dream</td>
+                                <td>The seventh spell in the Grimoire, selects a random spell to cast using less magic than normal.</td>
+                            </tr>
+                            <tr>
+                                <td>GC</td>
+                                <td>Golden cookie</td>
+                                <td>Rare temporary collectibles that give boosts.</td>
+                            </tr>
+                            <tr>
+                                <td>WC</td>
+                                <td>Wrath cookie</td>
+                                <td>A variant of golden cookies that sometimes give negative effects.</td>
+                            </tr>
+                            <tr>
+                                <td>Onscreen</td>
+                                <td>Onscreen golden/wrath cookies</td>
+                                <td>An unclicked Golden/wrath cookie. These unclicked cookies increase backfire chance of FtHoF.</td>
+                            </tr>
+                            <tr>
+                                <td>CF</td>
+                                <td>Click frenzy</td>
+                                <td>An effect from Golden/wrath cookies, giving 777x cookie from clicks for a short period.</td>
+                            </tr>
+                            <tr>
+                                <td>EF</td>
+                                <td>Elder frenzy</td>
+                                <td>An effect from Wrath cookies, giving 666x CpS for an especially short period.</td>
+                            </tr>
+                            <tr>
+                                <td>BS</td>
+                                <td>Building special</td>
+                                <td>A category of effects from Golden/wrath cookies, where each building of a randomly chosen building type boosts CpS by 10% per.</td>
+                            </tr>
+                        </tbody>
+                    </table></md-table-container></md-table>
+                    <p>
+                        More lingo: <a href="https://docs.google.com/document/d/1m-ik_Ceq80VhX2HHS3nh7yj2_Kw1g-GozOJ2fw3gDSg/edit" target="_blank">click here</a>
+                    </p>
+                </div>
             </div>
             <div class="collapse-content" id="content-2">
+                <div class="historical-guide-notice">
+                    Out of respect for the previous maintainers of this tool, this old guide has been archived here.
+                </div>
                 Guide from RebelKeithy, Skeezy, Mylaaan, and Joseph:
                 <ul>
                     <pre>RebelKeithy</pre>
@@ -514,20 +587,13 @@
                             <div>
                                 <label
                                     style="font-size: 12px; color: #666; display: flex; align-items: center; gap: 8px;">
-                                    <span class="color-square" ng-style="{'background-color': condition.color}"></span>
-                                    Color
+                                    Color (click this: <input class="color-square" type="color" ng-model="condition.color" 
+                                    ng-change="updateConditionColor(condition, condition.color)" ng-readonly="highlightRearrangementEnabled"> )
                                 </label>
                                 <div class="color-input-container">
-                                    <input class="condition-color" type="text" ng-model="condition.color"
+                                    <input class="condition-color" type="type" ng-model="condition.color"
                                         ng-change="updateConditionColor(condition, condition.color)"
                                         ng-readonly="highlightRearrangementEnabled" placeholder="Blank for no color">
-                                    <div class="picker-open" ng-click="isPickerOpen = !isPickerOpen;"
-                                        ng-show="!highlightRearrangementEnabled">
-                                        <color-picker color="splitColorAndAlpha(condition.color).color"
-                                            opacity="splitColorAndAlpha(condition.color).alpha" is-open="isPickerOpen"
-                                            ng-if="true">
-                                        </color-picker>
-                                    </div>
                                 </div>
                             </div>
 
@@ -736,6 +802,7 @@
 
                 <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight Buff Active">
                     Dragonflight Buff Active
+                    <md-tooltip md-direction="top">NOTE: NOT to be confused with the Dragonflight Aura. Dragonflight Buff is a buff rarely gotten from Golden/Wrath cookies while the Dragonflight Aura is slotted.</md-tooltip>
                 </md-checkbox>
 
                 <md-checkbox class="c2" ng-model="supremeintellect" aria-label="Supreme Intellect Aura Active">
@@ -769,6 +836,10 @@
             <md-checkbox ng-model="hide_effect_elaboration" aria-label="Hide effect elaboration">
                 Hide effect elaboration
                 <md-tooltip md-direction="top">Removes description about what an effect does in the tooltips.</md-tooltip>
+            </md-checkbox>
+            <md-checkbox ng-model="invert_tooltip_hide_rules" aria-label="Shift to show tooltips" ng-click="shiftEventListenerCheck({ shiftKey: hideTooltips })">
+                Shift to show tooltips
+                <md-tooltip md-direction="top">Tooltip is hidden by default, press shift to show the tooltip instead of hiding the tooltip.</md-tooltip>
             </md-checkbox>
         </div>
 
@@ -815,7 +886,7 @@
                                     <h3>{{cookie_list.firstCall.value.toFixed(4) + " (" +
                                         (cookie_list.firstCall.value+baseBackfireChance>1 ? 0 :
                                         ((1.075-cookie_list.firstCall.value-baseBackfireChance)/0.15).toFixed(0)) + "
-                                        GC)"}}</h3>
+                                        onscreen"+(((1.075-cookie_list.firstCall.value-baseBackfireChance)/0.15).toFixed(0) != 1?'s':'') + ")"}}</h3>
                                 </div>
                             </md-list-item>
                         </md-list>
@@ -832,8 +903,8 @@
                         <md-list flex>
                             <md-subheader class="md-no-sticky">Only valid with no season or Christmas
                                 active.</md-subheader>
-                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null" tooltips
-                                tooltip-append-to-body="true"
+                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null"
+                                tooltips tooltip-append-to-body="true"
                                 tooltip-template="{{getEffectTooltip(cookie_list, false)}}"
                                 tooltip-class="cast-tooltip" tooltip-side="top" tooltip-speed="fast"
                                 tooltip-hidden="{{hideTooltips}}">
@@ -843,7 +914,7 @@
                                     <h3 ng-style="{{cookie_list.getCast(false).getHighlightColor()}}">
                                         {{cookie_list.stringify(false)}}</h3>
                                     <h3 class="md-left-margin"
-                                        ng-show="{{cookie_list.getOtherCast(false).settings.hiddenIndicator}}"
+                                        ng-if="cookie_list.getOtherCast(false).settings.hiddenIndicator"
                                         ng-style="{{cookie_list.getOtherCast(false).getHighlightColor()}}">
                                         {{cookie_list.postfix(false, cookie_list.backfiring()?0:1)}}</h3>
                                 </div>
@@ -876,7 +947,7 @@
                                 </div>
                             </md-subheader>
                             <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null"
-                                title="{{cookie_list.getCast(true).description}}" tooltips tooltip-append-to-body="true"
+                                tooltips tooltip-append-to-body="true"
                                 tooltip-template="{{getEffectTooltip(cookie_list, true)}}"
                                 tooltip-class="cast-tooltip" tooltip-side="top" tooltip-speed="fast"
                                 tooltip-hidden="{{hideTooltips}}">
@@ -886,9 +957,9 @@
                                     <h3 ng-style="{{cookie_list.getCast(true).getHighlightColor()}}">
                                         {{cookie_list.stringify(true)}}</h3>
                                     <h3 class="md-left-margin"
-                                        ng-show="{{cookie_list.getCast(false).settings.hiddenIndicator}}"
-                                        ng-style="{{cookie_list.getCast(false).getHighlightColor()}}">
-                                        {{cookie_list.postfix(false)}}</h3>
+                                        ng-if="cookie_list.getOtherCast(true).settings.hiddenIndicator"
+                                        ng-style="{{cookie_list.getOtherCast(true).getHighlightColor()}}">
+                                        {{cookie_list.postfix(true, cookie_list.backfiring()?0:1)}}</h3>
                                 </div>
                             </md-list-item>
                         </md-list>
@@ -933,6 +1004,10 @@
             <br>Note: this tool cannot track changes in your game.
             To obtain new predictions after each spell cast, re-import your new save or use the "Cast spell" button
             after each cast.
+            <br>
+            <br>
+            <br>
+            <br><a ng-click="hasSeed = true"><small>Just show me everything already</small></a>
         </div>
 </body>
 

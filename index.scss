@@ -216,7 +216,7 @@ h3 {
 .condition-color {
   width: 100%;
   min-width: 0px;
-  padding: 6px;
+  padding: 2px;
   border: 1px solid #ddd;
   border-radius: 3px;
   box-sizing: border-box;
@@ -272,10 +272,13 @@ h3 {
 }
 
 .color-square {
-  width: 12px;
-  height: 12px;
-  border: 1px solid #ccc;
+  width: 18px;
+  height: 18px;
+  padding: 0px;
+  border: 0px;
+  margin: 0px;
   display: inline-block;
+  cursor: pointer;
 }
 
 .button-grid-container {
@@ -346,6 +349,12 @@ tooltip.active:not(._force-hidden) tip {
   z-index: 99999 !important;
   position: relative;
 }
+.historical-guide-notice {
+  background-color: #fbffb4;
+  padding: 10px;
+  margin: 10px;
+  width: 100%;
+}
 
 /* Theming */
 
@@ -401,5 +410,9 @@ tooltip.active:not(._force-hidden) tip {
   .cast-tooltip,
   input {
     border-color: #555;
+  }
+
+  .historical-guide-notice {
+    background-color: #301d99;
   }
 }

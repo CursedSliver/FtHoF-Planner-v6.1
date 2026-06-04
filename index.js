@@ -135,7 +135,6 @@ class LocalStorageManager {
 
 var app = angular.module('myApp', [
   'ngMaterial',
-  'colorPicker',
   'dndLists',
   '720kb.tooltips'
 ]);
@@ -151,7 +150,7 @@ app.controller('myCtrl', function ($scope) {
   $scope.visualOptionsShowing = false;
 
   $scope.seed = '';
-  $scope.hasSeed = true;
+  $scope.hasSeed = false;
   $scope.ascensionMode = 0;
   $scope.spellsCastTotal = 0;
   $scope.spellsCastThisAscension = 0;
@@ -383,11 +382,19 @@ app.controller('myCtrl', function ($scope) {
     }
 
     parseHighlights() {
-      this.firstCall.setHighlights(this);
-      this.noChangeSuccess.setHighlights(this);
-      this.noChangeBackfire.setHighlights(this);
-      this.changeSuccess.setHighlights(this);
-      this.changeBackfire.setHighlights(this);
+      const a = this.firstCall.iterateHighlights(this),
+      b = this.noChangeSuccess.iterateHighlights(this),
+      c = this.noChangeBackfire.iterateHighlights(this),
+      d = this.changeSuccess.iterateHighlights(this),
+      e = this.changeBackfire.iterateHighlights(this);
+      return a + b + c + d + e;
+    }
+    setAllHighlights() {
+      this.firstCall.setHighlights();
+      this.noChangeSuccess.setHighlights();
+      this.noChangeBackfire.setHighlights();
+      this.changeSuccess.setHighlights();
+      this.changeBackfire.setHighlights();
     }
   }
   $scope.access_cookie = function (row) {
@@ -493,8 +500,21 @@ app.controller('myCtrl', function ($scope) {
       arr.push(gambler);
       $scope.displayCookies.push(arr);
     }
+    let processedSoFar = 0;
+    const totalProcessCount = Array.from($scope.highlightConditions.values())
+      .reduce((acc, cur, i) => acc + ((!cur.enabled || cur.parseError)?(0):(5 * $scope.cookies.length)), 0);
+    while(processedSoFar < totalProcessCount) { 
+      const prev = processedSoFar;
+      for (let i in $scope.cookies) {
+        processedSoFar += $scope.cookies[i].parseHighlights();
+      } 
+      if (processedSoFar == prev) { 
+        console.log('INFINITE LOOP', processedSoFar, totalProcessCount);
+        break; 
+      } // Infinite loop
+    }
     for (let i in $scope.cookies) {
-      $scope.cookies[i].parseHighlights();
+      $scope.cookies[i].setAllHighlights();
     }
     console.log($scope.cookies);
     console.log(bsIndices);
@@ -687,10 +707,25 @@ app.controller('myCtrl', function ($scope) {
     }
 
     highlightsCSS = '';
-    highlights = [];
+    highlights = new Map();
+    clearHighlights() {
+      this.highlights.clear();
+      this.highlightsCSS = '';
+    }
+    iterateHighlights(castRow, allRows = $scope.cookies) {
+      const context = { element: this, castRow, allRows };
+      let processed = 0;
+      for (const [key, condition] of $scope.highlightConditions.entries()) {
+        if (this.highlights.has(condition)) { continue; }
+        if (!condition.enabled || condition.parseError) { continue; }
+        if (!condition.dependenciesResolved(context)) { continue; }
+        this.highlights.set(condition, condition.check(context)?condition.color:'');
+        processed++;
+      }
+      return processed;
+    }
     setHighlights(castRow, allRows = $scope.cookies) {
-      this.highlights = computeHighlights(this, castRow, allRows);
-      this.highlightsCSS = generateEqualSplitGradient(this.highlights);
+      this.highlightsCSS = generateEqualSplitGradient(Array.from(this.highlights.values()).filter(e => !!e));
     }
     getHighlightColor() {
       return { backgroundImage: this.highlightsCSS };
@@ -707,12 +742,11 @@ app.controller('myCtrl', function ($scope) {
   };
   $scope.hideTooltips = false;
   $scope.shiftEventListenerCheck = (e) => {
-    $scope.hideTooltips = e.shiftKey;
+    $scope.hideTooltips = $scope.invert_tooltip_hide_rules?(!e.shiftKey):e.shiftKey;
     document.documentElement.style.setProperty(
       '--cast-tooltip-style',
       $scope.hideTooltips ? 'none' : 'block'
     );
-    console.log(e.shiftKey, $scope.hideTooltips);
   };
   document.addEventListener('keydown', $scope.shiftEventListenerCheck);
   document.addEventListener('keyup', $scope.shiftEventListenerCheck);
@@ -811,10 +845,21 @@ app.controller('myCtrl', function ($scope) {
     }
 
     highlightsCSS = '';
-    highlights = [];
+    highlights = new Map();
+    iterateHighlights(castRow, allRows = $scope.cookies) {
+      const context = { element: this, castRow, allRows };
+      let processed = 0;
+      for (const [key, condition] of $scope.highlightConditions.entries()) {
+        if (this.highlights.has(condition)) { continue; }
+        if (!condition.enabled || condition.parseError) { continue; }
+        if (!condition.dependenciesResolved(context)) { continue; }
+        this.highlights.set(condition, condition.check(context)?condition.color:'');
+        processed++;
+      }
+      return processed;
+    }
     setHighlights(castRow, allRows = $scope.cookies) {
-      this.highlights = computeHighlights(this, castRow, allRows);
-      this.highlightsCSS = generateEqualSplitGradient(this.highlights);
+      this.highlightsCSS = generateEqualSplitGradient(Array.from(this.highlights.values()).filter(e => !!e));
     }
     getHighlightColor() {
       return { backgroundImage: this.highlightsCSS };
@@ -1913,6 +1958,8 @@ app.controller('myCtrl', function ($scope) {
       this._advanced = bool;
     }
 
+    ast;
+    dependencies = new Map();
     compile(conditionsStr = this.conditionsText) {
       try {
         const tokens = tokenizeCondition(conditionsStr);
@@ -1926,13 +1973,42 @@ app.controller('myCtrl', function ($scope) {
         }
         this.ast = parsed.node;
         this.parseError = null;
+
+        // Traverse AST and collect condition_check IDs
+        const collectedIds = new Map();
+        const traverse = (node) => {
+          if (!node) return;
+          if (node.constructor.type === 'condition_check') {
+            collectedIds.set($scope.highlightConditions.get(node.id), node.indexMod);
+          }
+          if (node.left) traverse(node.left);
+          if (node.right) traverse(node.right);
+          if (node.operand) traverse(node.operand);
+          if (node.tokens) traverse(node.tokens);
+        };
+        traverse(this.ast);
+        this.dependencies = collectedIds;
       } catch (error) {
         this.parseError = error;
         this.ast = null;
+        this.dependencies = null;
       }
     }
 
     // Context: allRows, castRow, element
+    dependenciesResolved(context) {
+      if (this.dependencies.size === 0) { return true; }
+      for (const [condition, offset] of this.dependencies) {
+        const target = context.allRows[context.castRow.index + offset];
+        if (!target) { return true; }
+        if (target.firstCall.highlights.has(condition)) return false;
+        if (target.noChangeSuccess.highlights.has(condition)) return false;
+        if (target.noChangeBackfire.highlights.has(condition)) return false;
+        if (target.changeSuccess.highlights.has(condition)) return false;
+        if (target.changeBackfire.highlights.has(condition)) return false;
+      }
+      return true;
+    }
     check(context) {
       if (this.parseError) {
         return false;
@@ -2000,19 +2076,6 @@ app.controller('myCtrl', function ($scope) {
     }
 
     return `linear-gradient(to right, ${stops.join(', ')})`;
-  }
-
-  function computeHighlights(element, castRow, allRows) {
-    const context = { element, castRow, allRows };
-    const colors = [];
-    for (const [key, condition] of $scope.highlightConditions.entries()) {
-      if (condition.enabled && condition.check(context)) {
-        if (condition.color) {
-          colors.push(condition.color);
-        }
-      }
-    }
-    return colors;
   }
 
   function constructDefaultHighlightConditions() {
