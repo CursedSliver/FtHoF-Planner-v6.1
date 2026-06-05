@@ -1529,6 +1529,7 @@ app.controller('myCtrl', function ($scope) {
       this.requiresArg = requiresArg;
     }
     static type = 'Unknown';
+    static nonAdvancedShow = false;
 
     evaluate(arg, context) {
       throw new Error('Not implemented');
@@ -1573,6 +1574,7 @@ app.controller('myCtrl', function ($scope) {
       }
     }
     static type = 'Effect';
+    static nonAdvancedShow = true;
 
     evaluate(arg, context) {
       if (!(context.element instanceof EffectEntry)) {
@@ -1587,7 +1589,8 @@ app.controller('myCtrl', function ($scope) {
       super(spell.name, (spell.aliases ?? []).concat(internalKey), false);
       this.spell = spell;
     }
-    static type = "Gambler's fever dream spell";
+    static type = "Gambler fever dream spell";
+    static nonAdvancedShow = true;
 
     evaluate(arg, context) {
       if (!(context.element instanceof FirstCallEntry)) {
@@ -1598,10 +1601,12 @@ app.controller('myCtrl', function ($scope) {
   }
 
   class SpecialStatement extends StatementType {
-    constructor(name, func, aliases = []) {
-      super(name, aliases, true);
+    constructor(name, func, aliases = [], requiresArg = false) {
+      super(name, aliases, requiresArg);
       this.func = func;
     }
+    static type = "Special";
+    static nonAdvancedShow = false;
 
     evaluate(arg, context) {
       return this.func(arg, context);
@@ -1619,12 +1624,17 @@ app.controller('myCtrl', function ($scope) {
   StatementType.register(
     new SpecialStatement('EFFECT', (arg, context) => {
       return context.element instanceof EffectEntry;
-    })
+    }, ['EFFECTS'])
   );
   StatementType.register(
     new SpecialStatement('GFDOUTCOME', (arg, context) => {
       return context.element instanceof FirstCallEntry;
-    })
+    }, ['GFDOUTCOMES'])
+  );
+  StatementType.register(
+    new SpecialStatement('BACKFIRE', (arg, context) => {
+      return context.castRow.firstCall.backfires((arg)?parseFloat(arg):0.15);
+    }, ['BACKFIRES'], true)
   );
 
   class Token {
@@ -1640,7 +1650,7 @@ app.controller('myCtrl', function ($scope) {
         throw { type: ParsingException.INVALID_STATEMENT, statement };
       }
       const def = StatementType.getByName(statement.toLowerCase());
-      if (def.requiresArg && arg === null) {
+      if (def.requiresArg && args === null) {
         throw { type: ParsingException.MISSING_ARGUMENT, statement };
       }
       this.statement = statement;
@@ -1841,7 +1851,7 @@ app.controller('myCtrl', function ($scope) {
       } else if (/[a-zA-Z_\:\']/.test(char)) {
         // Parse identifier
         let j = i;
-        while (j < str.length && /[a-zA-Z0-9-_\:\']/.test(str[j])) j++;
+        while (j < str.length && /[a-zA-Z0-9-_.\:\']/.test(str[j])) j++;
         const identifier = str.substring(i, j).split(':');
         tokens.push({
           type: 'IDENT',
@@ -1849,10 +1859,10 @@ app.controller('myCtrl', function ($scope) {
           args: identifier.slice(1)
         });
         i = j;
-      } else if (/[0-9]/.test(char)) {
+      } else if (/[0-9.-]/.test(char)) {
         // Parse number
         let j = i;
-        while (j < str.length && /[0-9]/.test(str[j])) j++;
+        while (j < str.length && /[0-9.-]/.test(str[j])) j++;
         const number = parseInt(str.substring(i, j), 10);
         tokens.push({ type: 'NUM', value: number });
         i = j;
@@ -1960,7 +1970,7 @@ app.controller('myCtrl', function ($scope) {
 
       pos++;
 
-      return { node: new StatementToken(ident, tokens[pos - 1].args), pos };
+      return { node: new StatementToken(ident, tokens[pos - 1].args ?? null), pos };
     }
 
     throw {
@@ -2140,11 +2150,14 @@ app.controller('myCtrl', function ($scope) {
       new HighlightCondition('isRA', 'Resurrect Abomination', '#add8e6')
     );
     HighlightCondition.register(
-      new HighlightCondition('isSE', 'Spontaneous Edifice', '#add8e6')
+      new HighlightCondition('isSENonbackfire', 'Spontaneous Edifice & !gfdBackfiring:1', '#add8e6')
+    );
+    HighlightCondition.register(
+      new HighlightCondition('gfdBackfiring', 'Backfire:0.5', '')
     );
     HighlightCondition.register(
       new HighlightCondition(
-        'FtHoFHighlight',
+        'notableFtHoF',
         'Force the Hand of Fate & (isBS:1 | isEF:1)',
         '#ffff00'
       )

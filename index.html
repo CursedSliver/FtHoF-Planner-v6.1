@@ -661,16 +661,16 @@
                                 <label style="font-size: 12px; color: #666;">Condition</label>
                                 <div ng-if="!advancedModeEnabled" style="display: flex; gap: 6px;">
                                     <select class="condition-select"
-                                        ng-if="!highlightRearrangementEnabled && (condition.ast.constructor.type === 'statement')"
+                                        ng-if="!highlightRearrangementEnabled && (condition.ast.constructor.type === 'statement' && condition.ast.statementType.constructor.nonAdvancedShow)"
                                         ng-model="condition.selectedStatement"
                                         ng-change="updateConditionStatement(condition, condition.selectedStatement)"
                                         ng-init="condition.selectedStatement = condition.ast.statementType.name">
-                                        <option ng-repeat="statement in availableStatements" value="{{statement.name}}">
+                                        <option ng-repeat="statement in availableStatements" value="{{statement.name}}" ng-if="statement.constructor.type !== 'Special'">
                                             {{statement.name
                                             + ' (' + statement.constructor.type + ')'}}</option>
                                     </select>
                                     <div class="condition-select unavailable"
-                                        ng-if="!highlightRearrangementEnabled && !(condition.ast.constructor.type === 'statement')">
+                                        ng-if="!highlightRearrangementEnabled && !(condition.ast.constructor.type === 'statement' && condition.ast.statementType.constructor.nonAdvancedShow)">
                                         Toggle on advanced mode to modify this condition</div>
                                     <div class="condition-select in-transit" ng-if="highlightRearrangementEnabled"
                                         readonly>{{ condition.conditionsText }}</div>
@@ -834,9 +834,12 @@
                                             </tr>
                                             <tr>
                                                 <td>Specials</td>
-                                                <td>EFFECT, GFDOUTCOME</td>
-                                                <td>Only matches effects and Gambler's Fever Dream outcomes
-                                                    respectively.</td>
+                                                <td>Effect, GFDOutcome, Backfire:0.15, Backfire:0.5</td>
+                                                <td>Effect, GFDOutcome: Only matches effects and Gambler's Fever Dream outcomes
+                                                    respectively. 
+                                                    Backfire: matches if the row that the cast is contained in 
+                                                    backfires with backfire chance equal to or higher than the inputted number after the colon; 
+                                                    thus applies to all casts in a row at once.</td>
                                             </tr>
                                             <tr>
                                                 <td colspan="2">Condition statements</td>
