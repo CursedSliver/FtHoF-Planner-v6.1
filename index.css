@@ -362,7 +362,41 @@ tooltip.active:not(._force-hidden) tip {
   background-color: #fbffb4;
   padding: 10px;
   margin: 10px;
-  width: 100%;
+  flex: 1;
+}
+
+.advanced-material-warning {
+  background-color: #ffa6a6;
+  padding: 10px;
+  margin: 10px;
+  flex: 1;
+}
+
+.notice {
+  background-color: #fbffb4;
+  padding: 10px;
+  margin-top: 6px;
+  margin-bottom: 0px;
+  display: block;
+  flex: 1;
+}
+
+.notice.alternate {
+  background-color: #ffdcb4;
+}
+
+.options-box {
+  text-align: center;
+  padding: 5px;
+  border: 1px solid #979797;
+  margin: 6px;
+  border-radius: 5px;
+}
+
+button.md-raised.inverted {
+  border: 2px solid black;
+  box-sizing: border-box !important;
+  margin: 4px 6px;
 }
 
 /* Theming */
@@ -413,4 +447,16 @@ tooltip.active:not(._force-hidden) tip {
 }
 #app.dark .historical-guide-notice {
   background-color: #301d99;
+}
+#app.dark .advanced-material-warning {
+  background-color: #930303;
+}
+#app.dark .notice {
+  background-color: #301d99;
+}
+#app.dark .notice.alternate {
+  background-color: #0b4289;
+}
+#app.dark .options-box {
+  border-color: #b0b0b0;
 }/*# sourceMappingURL=index.css.map */

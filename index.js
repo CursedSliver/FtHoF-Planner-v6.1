@@ -148,6 +148,8 @@ app.controller('myCtrl', function ($scope) {
   $scope.advancedFeatures = false;
   $scope.unifiedGuideIsOpen = false;
   $scope.visualOptionsShowing = false;
+  $scope.backfireModifiersPanelOpen = false;
+  $scope.magicCountsPanelOpen = false;
 
   $scope.seed = '';
   $scope.hasSeed = false;
@@ -247,7 +249,7 @@ app.controller('myCtrl', function ($scope) {
   // 	delete $scope.combos
   // }
 
-  $scope.guideHidingStatuses = new Array(5).fill(false);
+  $scope.guideHidingStatuses = new Array(10).fill(false);
 
   $scope.load_game = function (str, fromURL) {
     if (!str) {
@@ -403,6 +405,37 @@ app.controller('myCtrl', function ($scope) {
       this.changeSuccess.clearHighlights();
       this.changeBackfire.clearHighlights();
     }
+
+    computeDisplayCaches() {
+      const cookie_list = this;
+      const baseBackfireChance = $scope.baseBackfireChance;
+      const access_cookie = $scope.access_cookie;
+      this.__spellIndexText = (this.index + 1) + " (" + ($scope.spellsCastThisAscension + this.index + 1) + " | " +
+        ($scope.spellsCastTotal + this.index + 1) + ")";
+
+      this.__noChangeIcon = cookie_list.getCast(false).getIcon(cookie_list.firstCall.backfires());
+      this.__noChangeStyles = cookie_list.getCast(false).getHighlightColor();
+      this.__noChangeText = cookie_list.stringify(false);
+      this.__noChangePostfixStyles = cookie_list.getOtherCast(false).getHighlightColor();
+      this.__noChangePostfixShow = cookie_list.getOtherCast(false).settings.hiddenIndicator;
+      this.__noChangePostfixText = cookie_list.postfix(false, cookie_list.backfiring()?0:1);
+
+      this.__changeIcon = cookie_list.getCast(true).getIcon(cookie_list.firstCall.backfires());
+      this.__changeStyles = cookie_list.getCast(true).getHighlightColor();
+      this.__changeText = cookie_list.stringify(true);
+      this.__changePostfixStyles = cookie_list.getOtherCast(true).getHighlightColor();
+      this.__changePostfixShow = cookie_list.getOtherCast(true).settings.hiddenIndicator;
+      this.__changePostfixText = cookie_list.postfix(true, cookie_list.backfiring()?0:1);
+
+      this.__gfdIcon = cookie_list.firstCall.GFDOutcomeIcon(access_cookie(cookie_list.index + 1)?access_cookie(cookie_list.index + 1).firstCall.backfires(Math.max(baseBackfireChance, 0.5)):0);
+      this.__gfdStyles = cookie_list.firstCall.getHighlightColor();
+      this.__gfdOutcomeText = cookie_list.firstCall.GFDOutcomeText();
+
+      this.__randomSeedText = cookie_list.firstCall.value.toFixed(4) + " (" +
+        (cookie_list.firstCall.value + baseBackfireChance > 1 ? 0 :
+          ((1.075 - cookie_list.firstCall.value - baseBackfireChance) / 0.15).toFixed(0)) +
+        " onscreen" + (((1.075 - cookie_list.firstCall.value - baseBackfireChance) / 0.15).toFixed(0) != 1 ? 's' : '') + ")";
+    }
   }
   $scope.access_cookie = function (row) {
     return $scope.cookies[row];
@@ -525,6 +558,7 @@ app.controller('myCtrl', function ($scope) {
     }
     for (let i in $scope.cookies) {
       $scope.cookies[i].setAllHighlights();
+      $scope.cookies[i].computeDisplayCaches();
     }
     console.log($scope.cookies);
     console.log(bsIndices);
@@ -545,7 +579,7 @@ app.controller('myCtrl', function ($scope) {
       );
     }
 
-    console.log('Combos: ');
+    console.log('Combos: '); 
     console.log($scope.combos);
     console.log(Date.now() - currentTime);
   };
@@ -709,9 +743,9 @@ app.controller('myCtrl', function ($scope) {
          */
         const castRow = relevantRow;
         return (
-          castRow.stringifyNoChange($scope.baseBackfireChance) +
+          castRow.stringifyNoChange(Math.max($scope.baseBackfireChance, 0.5)) +
           '; ' +
-          castRow.stringifyChange($scope.baseBackfireChance)
+          castRow.stringifyChange(Math.max($scope.baseBackfireChance, 0.5))
         );
       }
       return this.GFDOutcomeText();
@@ -742,6 +776,7 @@ app.controller('myCtrl', function ($scope) {
       return { backgroundImage: this.highlightsCSS };
     }
   }
+  $scope.MathMax = Math.max;
   function check_first_call(calls) {
     return new FirstCallEntry(calls[0]);
   }
@@ -912,7 +947,7 @@ app.controller('myCtrl', function ($scope) {
   }
   allEffects['Frenzy'] = EffectEntryFactory.create({
     name: 'Frenzy',
-    description: 'Gives x7 cookie production for 77 seconds.',
+    description: 'Gives x7 cookie production for 77 seconds base.',
     icon: 'img/img4.png',
     shorthand: 'F',
     aliases: ['f']
@@ -927,7 +962,7 @@ app.controller('myCtrl', function ($scope) {
   });
   allEffects['Click Frenzy'] = EffectEntryFactory.create({
     name: 'Click Frenzy',
-    description: 'Gives x777 cookies per click for 13 seconds.',
+    description: 'Gives x777 cookies per click for 13 seconds base.',
     icon: 'img/img3.png',
     shorthand: 'CF',
     aliases: ['cf']
@@ -960,7 +995,7 @@ app.controller('myCtrl', function ($scope) {
   });
   allEffects['Building Special'] = EffectEntryFactory.create({
     name: 'Building Special',
-    description: 'Get a variable bonus to cookie production for 30 seconds.',
+    description: 'Get a variable bonus to cookie production for 30 seconds base.',
     icon: 'img/img3.png',
     shorthand: 'BS',
     aliases: ['bs'],
@@ -973,11 +1008,14 @@ app.controller('myCtrl', function ($scope) {
     description: 'Gives you a free sugar lump.',
     icon: 'img/img5.png',
     shorthand: 'LUMP',
-    aliases: ['sweet', 'sweet!', 'lump', 'sugar lump']
+    aliases: ['sweet', 'sweet!', 'lump', 'sugar lump'],
+    settings: {
+      hiddenIndicator: true
+    }
   });
   allEffects['Clot'] = EffectEntryFactory.create({
     name: 'Clot',
-    description: 'Reduce production by 50% for 66 seconds.',
+    description: 'Reduce production by 50% for 66 seconds base.',
     icon: 'img/img6.png',
     shorthand: 'CLOT',
     aliases: []
@@ -993,14 +1031,14 @@ app.controller('myCtrl', function ($scope) {
   allEffects['Cursed Finger'] = EffectEntryFactory.create({
     name: 'Cursed Finger',
     description:
-      'Cookie production halted for 10 seconds, but each click is worth 10 seconds of production.',
+      'Cookie production halted for 10 seconds base, but each click is worth seconds of production equal to its max duration.',
     icon: 'img/img6.png',
     shorthand: 'CUF',
     aliases: ['cuf']
   });
   allEffects['Elder Frenzy'] = EffectEntryFactory.create({
     name: 'Elder Frenzy',
-    description: 'Gives x666 cookie production for 6 seconds.',
+    description: 'Gives x666 cookie production for 6 seconds base.',
     icon: 'img/img2.png',
     shorthand: 'EF',
     aliases: ['ef', 'elder', 'blood frenzy'],
@@ -1008,6 +1046,21 @@ app.controller('myCtrl', function ($scope) {
       hiddenIndicator: true
     }
   });
+  $scope.allEffects = allEffects;
+  $scope.allEffectsList = Object.keys(allEffects);
+  $scope.toggleAllHiddenIndicators = function(on) {
+    for (let i in allEffects) {
+      allEffects[i]._settings.hiddenIndicator = on;
+    }
+  }
+  $scope.resetDefaultEffectIndicators = function() {
+    for (let i in allEffects) {
+      allEffects[i]._settings.hiddenIndicator = false;
+    }
+    allEffects['Building Special']._settings.hiddenIndicator = true;
+    allEffects['Elder Frenzy']._settings.hiddenIndicator = true;
+    allEffects['Free Sugar Lump']._settings.hiddenIndicator = true;
+  }
   $scope.getEffectTooltip = function (cookie_list, change) {
     const cast = cookie_list;
     return ($scope.hide_effect_elaboration?'':cookie_list.getCast(change).getTooltip()

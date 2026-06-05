@@ -45,13 +45,12 @@
                 <md-button class="md-raised md-primary" ng-click="load_game()">Import Save or Seed</md-button>
             </div>
 
-            <p ng-show="advancedFeatures"><b>Based on FtHoF planner v1, v2, v3, v4, and v5 by RebelKeithy, Skeezy,
-                    Eminenti, Mylaaan, and Joseph. Huge thanks to them for
+            <p ng-show="advancedFeatures" style="text-align: center;"><b>Based on FtHoF planner v1, v2, v3, v4, v5, and v6 by RebelKeithy, Skeezy,
+                    Eminenti, Mylaaan, Joseph, and Leo. <br>Huge thanks to them for
                     creating such a helpful (and moddable) tool!</br>
-                    The current version is compatible with cookie clicker 2.058, "housekeeping". You can find combo data
-                    in the console logs!</p>
+                    The current version is compatible with cookie clicker 2.058, "housekeeping".</p>
             <br>
-            <md-button class="md-raised md-primary" ng-click="collapse_interface(1)" ng-show="advancedFeatures">Version
+            <md-button class="md-raised md-primary" ng-click="collapse_interface(1)" ng-show="hasSeed">Version
                 History</md-button></b>
             <div class="collapse-content" id="content-1">
                 <ul>
@@ -125,7 +124,7 @@
                     </li>
 
                     <md-divider style="margin: 1em 0;"></md-divider>
-                    <li>For feature requests or bug reports, tell me on the Dashnet Forums Discord server.
+                    <li>For feature requests or bug reports, ping @cursedsliver on the <a href="https://discord.gg/cookie" target="_blank">Dashnet Forums Discord server</a> and ask.
                     </li>
                     <li>If you make a bug report, please add the save export. This makes it easier to visualise
                         the problem you're facing and I can make sure it is fixed instead of almost being sure.
@@ -176,8 +175,9 @@
                         Each spell also has a small chance to "backfire" when casted, producing a different set of
                         "unintended" effects that are sometimes negative.<br>
                         This tool is primarily concerned with the second spell in the list, called <b>F</b>orce
-                        <b>t</b>he <b>H</b>and <b>o</b>f <b>F</b>ate (<b>FtHoF</b> for short). Its effect is spawning a
-                        golden cookie.
+                        <b>t</b>he <b>H</b>and <b>o</b>f <b>F</b>ate (<b>FtHoF</b> for short). <br>
+                        <br><img src="./img/fthof.png"><br>
+                        <small>Description for Force the Hand of Fate.</small><br>
                         <br>The probabilities of getting each of the various golden cookie effects are different from
                         the probabilities of naturally spawned golden cookies.
                         <br><br><img src="./img/FtHoFProbs.png"><br>
@@ -229,10 +229,14 @@
                         and uses that to produce predictions about what you will get next from FtHoF (you should know
                         what this means by now) by reverse engineering the game's code.
                         <br>The table at the bottom of the website contains your future predictions. You can hover over
-                        each effect to see what it means.
-                        <br><small>Tip: because outcomes only depend on the game seed and the cast count, you can skip
+                        each effect to see what it means. A wrath cookie indicates backfiring, while a golden cookie indicates success.
+                        <span class="notice">
+                            Note: these predictions are only 100% valid without any backfire chance modifiers; things such as on-screen unclicked golden/wrath cookies, Diminish Ineptitude (spell), and Supreme intellect (aura) modify backfire chance.
+                            <br>If you do have any backfire chance modifiers, you can use the "Set backfire modifiers" button to input any modifiers that you may have.
+                        </span>
+                        <br><span class="notice alternate">Tip: because outcomes only depend on the game seed and the cast count, you can skip
                             undesirable effects by casting a non-FtHoF, cheaper spell, saving magic regeneration
-                            time.</small>
+                            time.</span>
                     </p>
                 </div>
                 <md-divider></md-divider>
@@ -307,6 +311,77 @@
                     </table></md-table-container></md-table>
                     <p>
                         More lingo: <a href="https://docs.google.com/document/d/1m-ik_Ceq80VhX2HHS3nh7yj2_Kw1g-GozOJ2fw3gDSg/edit" target="_blank">click here</a>
+                    </p>
+                </div>
+                <md-toolbar class="md-hue-1" style="cursor: pointer;" ng-click="guideHidingStatuses[5] = !guideHidingStatuses[5]">
+                    <div class="md-toolbar-tools">
+                        <h2 flex md-truncate>Gambler's Fever Dream, and the Random seed (ADVANCED)</h2>
+                        <md-button class="md-icon-button" aria-label="Toggle visbility of panel">
+                            <md-icon md-svg-icon="img/upArrow.svg"
+                                class="{{guideHidingStatuses[5]?'flipped':''}}"></md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <div class="block" ng-if="guideHidingStatuses[5]">
+                    <div class="advanced-material-warning">This material is only applicable with Advanced features enabled. Toggle it on using the "ENABLE ADVANCED FEATURES" button besides the guide button.</div>
+                    <p>
+                        The Gambler's Dream column indicates what spell <b>G</b>ambler's <b>F</b>ever <b>D</b>ream (GFD) will choose to cast. 
+                        <br><br><img src="./img/gfd.png"><br>
+                        <br>This is useful because spells casted through GFD are cheaper.
+                        <br>If a GFD would cast FtHoF, hovering over the cell would display what that FtHoF will cast. This is usually the outcomes on the row below it.
+                        <br>Despite what the effect description says, GFD actually raises the backfire chance to a minimum of 50% instead of doubling it.
+                        <br><span class="notice">Note: GFD is still a spell, so casting it will cause it to progress to the next outcome.</span>
+                        <br><span class="notice alternate">Also note: This column is valid IF and only if all spells are castable by GFD. 
+                            A spell is not castable if you don't have enough magic for GFD to cast it, even with the halved magic cost. 
+                            The minimum amount of magic you need for it to be valid is 22/22 magic.
+                        <br>You can see a more accurate version according to your magic counts by inputting them into the planner through the "Configure magic counts" button just above the table.</span>
+                    </p>
+                    <md-divider></md-divider>
+                    <p>
+                        The Random seeds column displays a hidden number associated with each row of outcomes that, due to the peculiar way the game is programmed, dictates both backfiring and GFD outcome.
+                        Beside the number you can see how many on-screen golden/wrath cookies it takes for the cast to backfire. (each one adds +15% to backfire chance)
+                        <br>Knowledgeable players also use this information to determine GFD transmutations.
+                        <br><span class="notice">GFD transmutation: GFD can be coerced into casting something that it would not normally cast, 
+                            by adjusting magic count and max magic count such that a specific subset of spells are castable by GFD.
+                        </span>
+                    </p>
+                </div>
+                <md-toolbar class="md-hue-2" style="cursor: pointer;" ng-click="guideHidingStatuses[3] = !guideHidingStatuses[3]">
+                    <div class="md-toolbar-tools">
+                        <h2 flex md-truncate>Combo finder (ADVANCED)</h2>
+                        <md-button class="md-icon-button" aria-label="Toggle visbility of panel">
+                            <md-icon md-svg-icon="img/upArrow.svg"
+                                class="{{guideHidingStatuses[3]?'flipped':''}}"></md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <div class="block" ng-if="guideHidingStatuses[3]">
+                    <div class="advanced-material-warning">This material is only applicable with Advanced features enabled. Toggle it on using the "ENABLE ADVANCED FEATURES" button besides the guide button.</div>
+                    <p>The Combo finder can be accessed through the "Open Combo finder" button.</p>
+                </div>
+                <md-toolbar class="md-hue-1" style="cursor: pointer;" ng-click="guideHidingStatuses[4] = !guideHidingStatuses[4]">
+                    <div class="md-toolbar-tools">
+                        <h2 flex md-truncate>Custom highlights (ADVANCED)</h2>
+                        <md-button class="md-icon-button" aria-label="Toggle visbility of panel">
+                            <md-icon md-svg-icon="img/upArrow.svg"
+                                class="{{guideHidingStatuses[4]?'flipped':''}}"></md-icon>
+                        </md-button>
+                    </div>
+                </md-toolbar>
+                <div class="block" ng-if="guideHidingStatuses[4]">
+                    <div class="advanced-material-warning">This material is only applicable with Advanced features enabled. Toggle it on using the "ENABLE ADVANCED FEATURES" button besides the guide button.</div>
+                    <p>Highlight settings can be accessed through the "Show/hide Highlight settings" button.</p>
+                    <md-divider></md-divider>
+                    <p>
+                        In the planner, some noteworthy outcomes (such as BS and EF) are highlighted to make them easier to spot. 
+                        <br>You can modify what outcomes are considered noteworthy, change their colors, or add new highlights. 
+                    </p>
+                    <md-divider></md-divider>
+                    <p>
+                        Advanced mode can be toggled through the top-right button.
+                        <br>Advanced mode allows you to add filtering logic to your highlights. 
+                        For example, it can detect consecutive BSes, by making a BS outcome only highlight blue if there is a BS in the row above it.
+                        <br>Information about the syntax can be through the "Advanced help" button.
                     </p>
                 </div>
             </div>
@@ -488,7 +563,7 @@
 
             <md-button class="md-raised md-primary" ng-show="advancedFeatures"
                 ng-click="comboFinder = !comboFinder;">{{comboFinder?'Close':'Open'}} Combo finder</md-button>
-            <div ng-if="comboFinder">
+            <div ng-if="comboFinder && advancedFeatures">
                 <ul ng-if="combos">
                     <li class="combo-listitem" ng-repeat="combo in combos">
                         <b>{{$index + min_combo_length}}x Combo</b>
@@ -512,8 +587,6 @@
 
                 <b>Options:</b>
                 <br>
-                <label>Lookahead Length <input type="number" ng-model="lookahead" min=10 max=100000></label>
-
                 <label>Min Combo <input type="number" ng-model="min_combo_length" min=1 max=20></label>
 
                 <label>Max Combo <input type="number" ng-model="max_combo_length" min=1 max=20></label>
@@ -529,20 +602,6 @@
 
                 <md-checkbox ng-checked=true ng-model="skip_edifices" aria-label="Allow Spontaneous Edifice Skips">
                     Skip Spontaneous Edifices
-                </md-checkbox>
-            </div>
-
-            <md-divider ng-show="advancedFeatures"></md-divider>
-
-            <div class="visual-options" ng-show="advancedFeatures" style="padding: 5px;">
-                <md-checkbox ng-model="dark_mode" checkd>
-                    Dark Mode
-                </md-checkbox>
-                <md-checkbox ng-model="default_font" checked>
-                    Default Font
-                </md-checkbox>
-                <md-checkbox ng-model="change_icons" aria-label="Change Icons">
-                    Combo-focused Icons
                 </md-checkbox>
             </div>
 
@@ -794,55 +853,98 @@
                 </div>
             </div>
 
-            <md-divider ng-show="advancedFeatures"></md-divider>
-
-            <div class="cast-display-settings" ng-show="advancedFeatures">
-                <label>Golden+Wrath Cookies on screen <input type="number" ng-model="on_screen_cookies" min=0
-                        max=10></label>
-
-                <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight Buff Active">
-                    Dragonflight Buff Active
-                    <md-tooltip md-direction="top">NOTE: NOT to be confused with the Dragonflight Aura. Dragonflight Buff is a buff rarely gotten from Golden/Wrath cookies while the Dragonflight Aura is slotted.</md-tooltip>
-                </md-checkbox>
-
-                <md-checkbox class="c2" ng-model="supremeintellect" aria-label="Supreme Intellect Aura Active">
-                    Supreme Intellect Aura Active
-                </md-checkbox>
-
-                <md-checkbox class="c2" ng-model="diminishineptitude" aria-label="Diminish Ineptitude Active">
-                    Diminish Ineptitude Active
-                </md-checkbox>
-                <br>
-                <b>(These two options are only used for GFD)</b>
-                <label>Current Mana <input type="number" ng-model="magic" min=0 max=1000></label>
-                <label>Maximum Mana <input type="number" ng-model="max_magic" min=0 max=1000></label>
-            </div>
-
             <md-divider ng-show="hasSeed"></md-divider>
 
         <md-button class="md-raised md-primary" ng-show="advancedFeatures" ng-click="update_cookies()">Apply Settings</md-button>
-        <md-button class="md-raised md-primary" ng-show="hasSeed" ng-click="cast_spell()" style="min-width: 20%;">Cast Spell</md-button>
-        <md-button class="md-raised" ng-show="hasSeed" ng-click="visualOptionsShowing = !visualOptionsShowing">{{visualOptionsShowing?'Close ':'Open '}} visual options</md-button>
-        <div class="visual-options" ng-show="visualOptionsShowing" style="padding: 5px;">
+        <md-button class="md-raised md-primary" ng-show="hasSeed" ng-click="cast_spell()" style="min-width: 15%;">
+            Cast Spell
+            <md-tooltip md-direction="top">
+                Press this button each time after you cast a spell in-game.
+            </md-tooltip>
+        </md-button>
+        <md-button class="md-raised{{ visualOptionsShowing?' inverted':''}}" ng-show="hasSeed" ng-click="visualOptionsShowing = !visualOptionsShowing">Visual options</md-button>
+        <md-button class="md-raised{{ backfireModifiersPanelOpen?' inverted':''}}" ng-show="hasSeed" ng-click="backfireModifiersPanelOpen = !backfireModifiersPanelOpen">Set backfire modifiers</md-button>
+        <md-button class="md-raised{{ magicCountsPanelOpen?' inverted':''}}" ng-show="hasSeed && advancedFeatures" ng-click="magicCountsPanelOpen = !magicCountsPanelOpen">Configure magic counts</md-button>
+        <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight BUFF Active" ng-show="hasSeed" ng-click="update_cookies()">
+            GC buff from Dragonflight Present
+            <md-tooltip md-direction="top">NOTE: NOT to be confused with the Dragonflight Aura. This is the buff rarely gotten from Golden/Wrath cookies while the Dragonflight Aura is slotted, also called Dragonflight.</md-tooltip>
+        </md-checkbox>
+        <div class="options-box visual-options" ng-show="visualOptionsShowing">
+            <h3>Visual options</h3>
+            <md-divider style="margin-bottom: 5px;"></md-divider>
+            <label>Lookahead Length <input type="number" ng-model="lookahead" min=10 max=100000></label>
             <md-checkbox ng-model="dark_mode" checkd>
                 Dark Mode
+                <md-tooltip md-direction="top">Dark mode</md-tooltip>
             </md-checkbox>
             <md-checkbox ng-model="default_font" checked>
                 Default Font
+                <md-tooltip md-direction="top">The legacy font from the previous planner iterations</md-tooltip>
             </md-checkbox>
             <md-checkbox ng-model="change_icons" aria-label="Change Icons">
                 Combo-focused Icons
+                <md-tooltip md-direction="top">Changes outcome icons to indicate the outcome itself</md-tooltip>
             </md-checkbox>
             <md-checkbox ng-model="hide_effect_elaboration" aria-label="Hide effect elaboration">
                 Hide effect elaboration
-                <md-tooltip md-direction="top">Removes description about what an effect does in the tooltips.</md-tooltip>
+                <md-tooltip md-direction="top">Removes description about what an effect does in the tooltips</md-tooltip>
             </md-checkbox>
             <md-checkbox ng-model="invert_tooltip_hide_rules" aria-label="Shift to show tooltips" ng-click="shiftEventListenerCheck({ shiftKey: hideTooltips })">
                 Shift to show tooltips
-                <md-tooltip md-direction="top">Tooltip is hidden by default, press shift to show the tooltip instead of hiding the tooltip.</md-tooltip>
+                <md-tooltip md-direction="top">Tooltip is hidden by default, press shift to show the tooltip instead of hiding the tooltip</md-tooltip>
+            </md-checkbox>
+            <md-divider style="margin-bottom: 5px; margin-top: 5px;"></md-divider>
+            <div class="options-box">
+                <h4>Configure backfire status outcomes</h4>
+                <p>Some effects are only accessible by changing the backfire chance
+                    so that a backfiring cast becomes success, or vice versa. 
+                    <br>Use below checkboxes to toggle which ones you wish to make visible in the planner.
+                </p>
+                <md-divider style="margin-bottom: 5px;"></md-divider>
+                <span ng-repeat="id in allEffectsList" ng-init="effect = allEffects[id]" style="width: 25%; display: inline-block;"> 
+                    <md-checkbox ng-model="effect._settings.hiddenIndicator">{{ effect._name + ' (' + effect._shorthand + ')' }}</md-checkbox> 
+                    <md-tooltip md-direction="top">{{ effect._description }}</md-tooltip>
+                </span>
+                <br>
+                <md-button class="md-raised" ng-click="toggleAllHiddenIndicators(true)">Toggle all on</md-button>
+                <md-button class="md-raised" ng-click="toggleAllHiddenIndicators(false)">Toggle all off</md-button>
+                <md-button class="md-raised" ng-click="resetDefaultEffectIndicators()">Reset defaults</md-button>
+            </div>
+        </div>
+        <div class="options-box backfire-modifiers" ng-show="backfireModifiersPanelOpen">
+            <h3>Backfire modifiers</h3>
+            <md-divider style="margin-bottom: 5px;"></md-divider>
+            <label>Golden+Wrath Cookies on screen <input type="number" ng-model="on_screen_cookies" min=0 max=10> (each one adds +15% to final backfire chance)</label>
+            <br>
+            
+            <md-checkbox class="c2" ng-model="supremeintellect" aria-label="Supreme Intellect Aura Active">
+                Supreme Intellect Aura Active
+                <md-tooltip md-direction="top">1.1x base backfire chance</md-tooltip>
+            </md-checkbox>
+
+            <md-checkbox class="c2" ng-model="realitybending" aria-label="Reality Bending Aura Active">
+                Reality Bending Aura Active
+                <md-tooltip md-direction="top">10% effect of Supreme Intellect; standalone 1.01x base backfire chance, 1.11x when used with Supreme Intellect</md-tooltip>
+            </md-checkbox>
+            <br>
+            
+            <md-checkbox class="c2" ng-model="diminishineptitude" aria-label="Diminish Ineptitude Success Active">
+                Diminish Ineptitude Success Active
+                <md-tooltip md-direction="top">Reduces base backfire chance by 10 times (Does not affect the additional backfire chance from onscreens)</md-tooltip>
+            </md-checkbox>
+
+            <md-checkbox class="c2" ng-model="diminishineptitudebackfire" aria-label="Diminish Ineptitude Backfire Active">
+                Diminish Ineptitude Backfire Active
+                <md-tooltip md-direction="top">Increases base backfire chance by 5 times (Does not affect the additional backfire chance from onscreens)</md-tooltip>
             </md-checkbox>
         </div>
-
+        <div class="options-box magic-counts" ng-show="magicCountsPanelOpen">
+            <h3>Configure magic counts</h3>
+            <md-divider style="margin-bottom: 5px;"></md-divider>
+            <label>Current Mana <input type="number" ng-model="magic" min=0 max=1000></label>
+            <label>Maximum Mana <input type="number" ng-model="max_magic" min=0 max=1000></label>
+        </div>
+        
             <md-divider ng-show="hasSeed"></md-divider>
             <div class="condition-error" ng-if="highlightingRuntimeErrors">{{ highlightingRuntimeErrors }}</div>
             <md-divider ng-show="hasSeed"></md-divider>
@@ -862,8 +964,7 @@
                             <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null">
                                 <div class="md-list-item-text" layout="column">
                                     <a name="{{$index}}"></a>
-                                    <h3>{{($index+1) + " (" + (spellsCastThisAscension+$index+1) + " | " +
-                                        (spellsCastTotal+$index+1) + ")"}}</h3>
+                                    <h3>{{cookie_list.__spellIndexText}}</h3>
                                 </div>
                             </md-list-item>
                         </md-list>
@@ -883,10 +984,7 @@
                             <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null">
                                 <div class="md-list-item-text" layout="column">
                                     <a name="{{$index}}"></a>
-                                    <h3>{{cookie_list.firstCall.value.toFixed(4) + " (" +
-                                        (cookie_list.firstCall.value+baseBackfireChance>1 ? 0 :
-                                        ((1.075-cookie_list.firstCall.value-baseBackfireChance)/0.15).toFixed(0)) + "
-                                        onscreen"+(((1.075-cookie_list.firstCall.value-baseBackfireChance)/0.15).toFixed(0) != 1?'s':'') + ")"}}</h3>
+                                    <h3>{{cookie_list.__randomSeedText}}</h3>
                                 </div>
                             </md-list-item>
                         </md-list>
@@ -903,20 +1001,16 @@
                         <md-list flex>
                             <md-subheader class="md-no-sticky">Only valid with no season or Christmas
                                 active.</md-subheader>
-                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null"
-                                tooltips tooltip-append-to-body="true"
-                                tooltip-template="{{getEffectTooltip(cookie_list, false)}}"
-                                tooltip-class="cast-tooltip" tooltip-side="top" tooltip-speed="fast"
-                                tooltip-hidden="{{hideTooltips}}">
-                                <img ng-src='{{cookie_list.getCast(false).getIcon(cookie_list.firstCall.backfires())}}'
+                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null">
+                                <img ng-src='{{cookie_list.__noChangeIcon}}'
                                     class="md-avatar" alt="Golden Cookie" />
                                 <div class="md-list-item-text" layout="row">
-                                    <h3 ng-style="{{cookie_list.getCast(false).getHighlightColor()}}">
-                                        {{cookie_list.stringify(false)}}</h3>
+                                    <h3 ng-style="cookie_list.__noChangeStyles">
+                                        {{cookie_list.__noChangeText}}</h3>
                                     <h3 class="md-left-margin"
-                                        ng-if="cookie_list.getOtherCast(false).settings.hiddenIndicator"
-                                        ng-style="{{cookie_list.getOtherCast(false).getHighlightColor()}}">
-                                        {{cookie_list.postfix(false, cookie_list.backfiring()?0:1)}}</h3>
+                                        ng-if="cookie_list.__noChangePostfixShow"
+                                        ng-style="cookie_list.__noChangePostfixStyles">
+                                        {{cookie_list.__noChangePostfixText}}</h3>
                                 </div>
                             </md-list-item>
                         </md-list>
@@ -946,20 +1040,16 @@
                                     </md-tooltip>
                                 </div>
                             </md-subheader>
-                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null"
-                                tooltips tooltip-append-to-body="true"
-                                tooltip-template="{{getEffectTooltip(cookie_list, true)}}"
-                                tooltip-class="cast-tooltip" tooltip-side="top" tooltip-speed="fast"
-                                tooltip-hidden="{{hideTooltips}}">
-                                <img ng-src='{{cookie_list.getCast(true).getIcon(cookie_list.firstCall.backfires())}}'
+                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null">
+                                <img ng-src='{{cookie_list.__changeIcon}}'
                                     class="md-avatar" alt="Golden Cookie" />
                                 <div class="md-list-item-text" layout="row">
-                                    <h3 ng-style="{{cookie_list.getCast(true).getHighlightColor()}}">
-                                        {{cookie_list.stringify(true)}}</h3>
+                                    <h3 ng-style="cookie_list.__changeStyles">
+                                        {{cookie_list.__changeText}}</h3>
                                     <h3 class="md-left-margin"
-                                        ng-if="cookie_list.getOtherCast(true).settings.hiddenIndicator"
-                                        ng-style="{{cookie_list.getOtherCast(true).getHighlightColor()}}">
-                                        {{cookie_list.postfix(true, cookie_list.backfiring()?0:1)}}</h3>
+                                        ng-if="cookie_list.__changePostfixShow"
+                                        ng-style="cookie_list.__changePostfixStyles">
+                                        {{cookie_list.__changePostfixText}}</h3>
                                 </div>
                             </md-list-item>
                         </md-list>
@@ -976,15 +1066,11 @@
                         <md-list flex>
                             <md-subheader class="md-no-sticky">The outcome of Gambler's Fever Dream.</md-subheader>
                             <md-list-item class="md-2-line"
-                                ng-init="hoverText = cookie_list.firstCall.GFDOutcomeText();"
-                                ng-mouseover="hoverText = cookie_list.firstCall.onHover(access_cookie(cookie_list.index + 1));"
-                                ng-click="hoverText = cookie_list.firstCall.onHover(access_cookie(cookie_list.index + 1));"
-                                ng-mouseleave="hoverText = cookie_list.firstCall.GFDOutcomeText();"
                                 ng-repeat="cookie_list in cookies" ng-click="null">
-                                <img ng-src='{{cookie_list.firstCall.GFDOutcomeIcon(access_cookie(cookie_list.index + 1).firstCall.backfires(Math.max(baseBackfireChance, 0.5)))}}'
+                                <img ng-src='{{cookie_list.__gfdIcon}}'
                                     class="md-avatar md-pixelated" alt="Golden Cookie" />
                                 <div class="md-list-item-text" layout="column">
-                                    <h3 ng-style="{{cookie_list.firstCall.getHighlightColor()}}">{{hoverText}}</h3>
+                                    <h3 ng-style="{{cookie_list.__gfdStyles}}">{{cookie_list.__gfdOutcomeText}}</h3>
                                 </div>
                             </md-list-item>
                         </md-list>
