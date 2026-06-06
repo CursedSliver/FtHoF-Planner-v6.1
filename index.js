@@ -434,7 +434,7 @@ app.controller('myCtrl', function ($scope) {
       this.__randomSeedText = cookie_list.firstCall.value.toFixed(4) + " (" +
         (cookie_list.firstCall.value + baseBackfireChance > 1 ? 0 :
           ((1.075 - cookie_list.firstCall.value - baseBackfireChance) / 0.15).toFixed(0)) +
-        " onscreen" + (((1.075 - cookie_list.firstCall.value - baseBackfireChance) / 0.15).toFixed(0) != 1 ? 's' : '') + ")";
+        " onscreen" + (Math.round((1.075 - cookie_list.firstCall.value - baseBackfireChance) / 0.15) != 1 ? 's' : '') + ")";
     }
   }
   $scope.access_cookie = function (row) {
