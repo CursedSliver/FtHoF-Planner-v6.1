@@ -1209,7 +1209,7 @@
                     </md-content>
                 </div>
                 <md-divider ng-show="advancedFeatures"></md-divider>
-                <div flex-gt-sm="100" flex ng-show="advancedFeatures">
+                <div flex-gt-sm="100" flex>
                     <md-toolbar layout="row" class="md-hue-3">
                         <div class="md-toolbar-tools">
                             <span>Gambler's Dream</span>
@@ -1255,6 +1255,7 @@
             <br>
             <br><a ng-click="setHasSeed()"><small>Just show me everything already</small></a>
         </div>
+        <div style="height: 1000px; width: 100%;" ng-if="seed === ''"></div>
 </body>
 
 </html>
