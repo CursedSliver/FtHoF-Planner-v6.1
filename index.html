@@ -633,10 +633,10 @@
         <label>Configuration data<br><textarea ng-model="config" rows="5" cols="30" placeholder="522fthof 52di/F 22fthof R+522fthof..."></textarea></label>
         <br> -->
 
-            <md-button class="md-raised md-primary" ng-show="advancedFeatures"
-                ng-click="comboFinder = !comboFinder;">{{comboFinder?'Close':'Open'}} Combo finder</md-button>
-            <md-button class="md-raised md-primary" ng-show="advancedFeatures"
-                ng-click="finnlessDestroyerOpen = !finnlessDestroyerOpen;">{{finnlessDestroyerOpen ? 'Close' : 'Open'}} Finnless Destroyer</md-button>
+            <md-button class="md-raised{{ comboFinder?'':' md-primary' }}" ng-show="advancedFeatures"
+                ng-click="comboFinder = !comboFinder;">Combo finder</md-button>
+            <md-button class="md-raised{{ finnlessDestroyerOpen?'':' md-primary' }}" ng-show="advancedFeatures"
+                ng-click="finnlessDestroyerOpen = !finnlessDestroyerOpen;">Finnless Destroyer</md-button>
             <div ng-show="comboFinder && advancedFeatures">
                 <ul ng-if="combos">
                     <li class="combo-listitem" ng-repeat="combo in combos">
