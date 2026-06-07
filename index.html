@@ -991,8 +991,14 @@
                 Press this button each time after you cast a spell in-game.
             </md-tooltip>
         </md-button>
-        <md-button class="md-raised{{ visualOptionsShowing?' inverted':''}}" ng-show="hasSeed" ng-click="visualOptionsShowing = !visualOptionsShowing">Visual options</md-button>
-        <md-button class="md-raised{{ backfireModifiersPanelOpen?' inverted':''}}" ng-show="hasSeed" ng-click="backfireModifiersPanelOpen = !backfireModifiersPanelOpen">Set backfire modifiers</md-button>
+        <md-button class="md-raised{{ visualOptionsShowing?' inverted':''}}" ng-show="hasSeed" ng-click="visualOptionsShowing = !visualOptionsShowing">
+            Visual options
+            <md-tooltip>How the predictions are presented.</md-tooltip>
+        </md-button>
+        <md-button class="md-raised{{ backfireModifiersPanelOpen?' inverted':''}}" ng-show="hasSeed" ng-click="backfireModifiersPanelOpen = !backfireModifiersPanelOpen">
+            Set backfire modifiers
+            <md-tooltip>Some stuff may increase/decrease backfire chance, which will change the backfiring status of some spells.</md-tooltip>
+        </md-button>
         <md-button class="md-raised{{ magicCountsPanelOpen?' inverted':''}}" ng-show="hasSeed && advancedFeatures" ng-click="magicCountsPanelOpen = !magicCountsPanelOpen">Configure magic counts</md-button>
         <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight BUFF Active" ng-show="hasSeed" ng-change="update_cookies()">
             GC buff from Dragonflight Present
