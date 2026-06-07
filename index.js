@@ -3246,6 +3246,7 @@ app.controller('myCtrl', function ($scope) {
 
   LocalStorageManager.loadAll();
   $scope.wipeAllSettings = function() { 
+    if (!confirm('Are you sure? This cannot be undone.')) { return; }
     LocalStorageManager.resetAll();
     location.reload();
   }
