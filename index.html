@@ -677,7 +677,7 @@
                     <label>
                         Max Spread 
                         <input type="number" ng-model="max_spread" min=0 max=99 ng-change="flagApplySettings()">
-                        <md-tooltip>How close together the BSs must be. A spread of 0 indicates that they must all be in consecutive casts. Increasing this number makes combos easier to find, but increases difficulty of execution.</md-tooltip>
+                        <md-tooltip>How close together the BSs must be. A spread of 0 indicates that they must all be in consecutive casts. <div class="breaker"></div>Increasing this number makes combos easier to find, but increases difficulty of execution.</md-tooltip>
                     </label>
                     <br>
                     <md-checkbox ng-checked=true ng-model="include_ef_in_sequence" aria-label="Include Elder Frenzy" ng-change="flagApplySettings()">
@@ -686,12 +686,12 @@
                     </md-checkbox>
                     <md-checkbox ng-checked=true ng-model="skip_abominations" aria-label="Allow Abomination Skips" ng-change="flagApplySettings()">
                         Skip Abominations
-                        <md-tooltip>Rows with GFD casting Resurrect abomination does not contribute to spread, as they can be skipped for free by casting GFD.</md-tooltip>
+                        <md-tooltip>Rows with GFD casting Resurrect abomination does not contribute to spread, <div class="breaker"></div>as they can be skipped for free by casting GFD.</md-tooltip>
                     </md-checkbox>
 
                     <md-checkbox ng-checked=true ng-model="skip_edifices" aria-label="Allow Spontaneous Edifice Skips" ng-change="flagApplySettings()">
                         Skip Spontaneous Edifices
-                        <md-tooltip>Rows with GFD casting Spontaneous Edifice success does not contribute to spread, as they can be skipped for free by casting GFD with at least 400 of every building.</md-tooltip>
+                        <md-tooltip>Rows with GFD casting Spontaneous Edifice success does not contribute to spread, <div class="breaker"></div>as they can be skipped for free by casting GFD with at least 400 of every building.</md-tooltip>
                     </md-checkbox>
                 </div>
             </div>
@@ -1002,7 +1002,7 @@
         <md-button class="md-raised{{ magicCountsPanelOpen?' inverted':''}}" ng-show="hasSeed && advancedFeatures" ng-click="magicCountsPanelOpen = !magicCountsPanelOpen">Configure magic counts</md-button>
         <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight BUFF Active" ng-show="hasSeed" ng-change="update_cookies()">
             GC buff from Dragonflight Present
-            <md-tooltip md-direction="top">NOTE: NOT to be confused with the Dragonflight Aura. This is the buff rarely gotten from Golden/Wrath cookies while the Dragonflight Aura is slotted, also called Dragonflight.</md-tooltip>
+            <md-tooltip md-direction="top">NOTE: NOT to be confused with the Dragonflight Aura. <div class="breaker"></div>This is the buff rarely gotten from Golden/Wrath cookies while the Dragonflight Aura is slotted, also called Dragonflight.</md-tooltip>
         </md-checkbox>
         <div class="options-box visual-options" ng-show="visualOptionsShowing">
             <h3>Visual options</h3>
@@ -1059,18 +1059,19 @@
 
             <md-checkbox class="c2" ng-model="realitybending" aria-label="Reality Bending Aura Active" ng-change="update_cookies()">
                 Reality Bending Aura Active
-                <md-tooltip md-direction="top">10% effect of Supreme Intellect; standalone 1.01x base backfire chance, 1.11x when used with Supreme Intellect</md-tooltip>
+                <md-tooltip md-direction="top">10% effect of Supreme Intellect<div class="breaker"></div>standalone 1.01x base backfire chance, 1.11x when used with Supreme Intellect</md-tooltip>
             </md-checkbox>
             <br>
 
             <md-checkbox class="c2" ng-model="diminishineptitude" aria-label="Diminish Ineptitude Success Active" ng-change="update_cookies()">
                 Diminish Ineptitude Success Active
-                <md-tooltip md-direction="top">Reduces base backfire chance by 10 times (Does not affect the additional backfire chance from onscreens)</md-tooltip>
+                <md-tooltip md-direction="top">Reduces base backfire chance by 10 times <div class="breaker"></div>(Does not affect the additional backfire chance from onscreens)</md-tooltip>
             </md-checkbox>
 
             <md-checkbox class="c2" ng-model="diminishineptitudebackfire" aria-label="Diminish Ineptitude Backfire Active" ng-change="update_cookies()">
                 Diminish Ineptitude Backfire Active
-                <md-tooltip md-direction="top">Increases base backfire chance by 5 times (Does not affect the additional backfire chance from onscreens)</md-tooltip>
+                <md-tooltip md-direction="top">Increases base backfire chance by 5 times 
+                    <div class="breaker"></div>(Does not affect the additional backfire chance from onscreens)</md-tooltip>
             </md-checkbox>
         </div>
         <div class="options-box magic-counts" ng-show="magicCountsPanelOpen">
@@ -1238,7 +1239,7 @@
             Import your save above to see predictions for upcoming Force the Hand of Fate casts.
             <span class="inquiry-tooltip">?
                 <md-tooltip md-direction="top">Force the Hand of Fate is a spell in the Grimoire minigame in Cookie
-                    Clicker. The Grimoire is unlocked by leveling Wizard towers to level 1 with a sugar lump, unlocked
+                    Clicker. <div class="breaker"></div>The Grimoire is unlocked by leveling Wizard towers to level 1 with a sugar lump, <div class="breaker"></div>unlocked
                     at 1 billion cookies baked.</md-tooltip>
             </span>
             This will not modify your save.

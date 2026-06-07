@@ -549,6 +549,17 @@ button.md-raised.inverted {
   opacity: 0.5;
 }
 
+.md-tooltip {
+  word-wrap: break-word !important;
+  height: auto !important;
+  text-align: center !important;
+}
+
+.breaker {
+  width: 100%;
+  margin-top: -7px;
+}
+
 .dark .button-quantity {
   background-color: #1e1e1e;
   color: #e0e0e0;
