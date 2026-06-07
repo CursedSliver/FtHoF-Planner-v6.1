@@ -1217,7 +1217,14 @@
                     </md-toolbar>
                     <md-content>
                         <md-list flex>
-                            <md-subheader class="md-no-sticky">The outcome of Gambler's Fever Dream.</md-subheader>
+                            <md-subheader class="md-no-sticky">
+                                The outcome of Gambler's Fever Dream.
+                                <div class="inquiry-tooltip">?
+                                    <md-tooltip md-direction="bottom">
+                                        This is a spell in the Grimoire that randomly chooses a spell to cast, <div class="breaker"></div>with reduced magic cost and increased backfire chance.
+                                    </md-tooltip>
+                                </div>
+                            </md-subheader>
                             <md-list-item class="md-2-line"
                                 ng-repeat="cookie_list in cookies" ng-click="null"
                                 spell-tooltip
