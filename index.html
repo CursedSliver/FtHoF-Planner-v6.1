@@ -113,16 +113,20 @@
                             </li>
                         </ul>
                     </li>
-                    <li><a href="https://plasma4.github.io/FtHoF-Planner-v6/">FtHoF planner v6</a> by
-                        <a href="https://discord.gg/cookie">@1_e0</a> (discord)
+                    <li><a href="https://plasma4.github.io/FtHoF-Planner-v6/">FtHoF planner v6 and v6.1</a> by
+                        <a href="https://discord.gg/cookie">@1_e0, @cursedsliver, @zypa</a> (discord)
                         <ul>
-                            <li>This version introduces the option to directly import a seed, more info on Gambler's
-                                Fever Dream offset abuse, particularly for Gambler's Fever Dream casts that return FtHoF
-                                by hovering over a particular FtHoF GFD cell, and some more UI options. You can also
-                                view a short description of what a golden or wrath cookie does by hovering over that
-                                cell. Some other things that have not been added yet are planned, such as a combo finder
-                                (simulates theoretical combos through brute-force, with gfd consideration, but with
-                                customizable combo options)
+                            <li>This version is a radical redesign of the entire user interface, 
+                                prioritizing readability, approachability, and modernization. 
+                                Additionally, it introduces:
+                                <br>The option to directly import a seed;
+                                <br>Tooltips regarding various things such as spell effects, hidden spell effects, and GFD FtHoF outcomes;
+                                <br>A brand new unified guide;
+                                <br>Loading a customizable amount of new spells;
+                                <br>Ability to define custom highlights;
+                                <br>Finnless destroyer mod integration;
+                                <br>And various new UI options.
+                                <br>On the technical side, the entire codebase underwent a refactor.
                             </li>
                         </ul>
                     </li>
@@ -310,11 +314,6 @@
                                 <td>DI</td>
                                 <td>Diminish Ineptitude</td>
                                 <td>A spell that temporarily makes all spells 10 times less likely to backfire on success. Also refers to the effect it generates on success.</td>
-                            </tr>
-                            <tr>
-                                <td>DIb</td>
-                                <td>Diminish Ineptitude backfire</td>
-                                <td>The backfire effect of Diminish Ineptitude, which temporarily makes all spells 5 times as likely to backfire.</td>
                             </tr>
                             <tr>
                                 <td>CF</td>
@@ -513,23 +512,6 @@
                                 educational
                                 purposes.
                             </li>
-                        </ul>
-                    </li>
-
-                    <li>
-                        <b>Finnless Destroyer: A specialized combo finder for the Finnless ruleset
-                            (very large decacasts and beyond). Tied to the same RNG as the main table.</b>
-                        <ul>
-                            <li>Lookahead controls how many spells ahead of your current position to scan.</li>
-                            <li>G!FtHoF range sets the maximum window in which the required G!FtHoFs must appear.</li>
-                            <li>G!FtHoFs needed sets how many GFD&nbsp;→&nbsp;FtHoF casts in that window count as a hit.</li>
-                            <li>Skip SE success &amp; RA extends the window whenever a GFD picks a useless outcome
-                                (Resurrect Abomination or successful Spontaneous Edifice), since those don't cost you
-                                a useful spell slot.</li>
-                            <li>Check G!FtHoF resolve ignores G!FtHoFs that can't realistically reach a nearby BS
-                                (filters out impossible combos).</li>
-                            <li>Auto-run on import will trigger the scan automatically every time you load a save
-                                or seed — useful when hunting for a fresh seed that meets the criteria.</li>
                         </ul>
                     </li>
 
