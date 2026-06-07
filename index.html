@@ -1028,6 +1028,10 @@
                 Shift to show tooltips
                 <md-tooltip md-direction="top">Tooltip is hidden by default, press shift to show the tooltip instead of hiding the tooltip</md-tooltip>
             </md-checkbox>
+            <md-checkbox ng-model="old_gfd_icons" aria-label="Legacy icons" ng-show="advancedFeatures" ng-change="update_cookies(); saveVisualOptions();">
+                Legacy icons
+                <md-tooltip md-direction="top">Uses older icons for Gambler's Fever Dream column</md-tooltip>
+            </md-checkbox>
             <md-divider style="margin-bottom: 5px; margin-top: 5px;"></md-divider>
             <div class="options-box">
                 <h4>Configure backfire status outcomes</h4>

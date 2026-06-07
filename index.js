@@ -186,6 +186,7 @@ app.controller('myCtrl', function ($scope) {
   $scope.change_icons = false;
   $scope.hide_effect_elaboration = false;
   $scope.invert_tooltip_hide_rules = false;
+  $scope.old_gfd_icons = false;
 
   // Combo finder defaults (all persisted across reloads)
   $scope.comboFinder = false;
@@ -1382,11 +1383,17 @@ app.controller('myCtrl', function ($scope) {
         return 'img/img9.png';
       }
       if (!backfires) {
+        if ($scope.old_gfd_icons) {
+          return 'img/GoldCookie.png';
+        }
         if (outcome === $scope.spells['hand of fate']) {
           return 'img/img8.png';
         }
         return 'img/img10.png';
       } else {
+        if ($scope.old_gfd_icons) {
+          return 'img/WrathCookie.png';
+        }
         if (outcome === $scope.spells['hand of fate']) {
           return 'img/img9.png';
         }
@@ -2931,7 +2938,8 @@ app.controller('myCtrl', function ($scope) {
       change_icons: $scope.change_icons,
       hide_effect_elaboration: $scope.hide_effect_elaboration,
       invert_tooltip_hide_rules: $scope.invert_tooltip_hide_rules,
-      hiddenIndicators
+      hiddenIndicators,
+      old_gfd_icons: $scope.old_gfd_icons
     };
   }
   function applyVisualOptionsState(obj) {
@@ -2952,6 +2960,9 @@ app.controller('myCtrl', function ($scope) {
           allEffects[id]._settings.hiddenIndicator = !!obj.hiddenIndicators[id];
         }
       }
+    }
+    if (typeof obj.old_gfd_icons === 'boolean') {
+      $scope.old_gfd_icons = obj.old_gfd_icons;
     }
   }
   $scope.saveVisualOptions = function () {
