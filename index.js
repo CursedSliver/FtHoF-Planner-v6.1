@@ -1305,7 +1305,7 @@ app.controller('myCtrl', function ($scope) {
         // Section 2: min onscreens WITHOUT DI/DIb
         const onscreensNoDi = onscreensFor(fc, _si, _rb, false, false);
         if (onscreensNoDi !== onscreensCurrent) {
-          sections.push('Without DI/DIb: <b>' + onscreensNoDi + '</b> onscreen' + (onscreensNoDi !== 1 ? 's' : ''));
+          sections.push('Without DI/DI backfire: <b>' + onscreensNoDi + '</b> onscreen' + (onscreensNoDi !== 1 ? 's' : ''));
         }
         // (else: same as current — implicitly merged above)
 
@@ -1313,9 +1313,9 @@ app.controller('myCtrl', function ($scope) {
         if (!_dib) {
           const onscreensWithDib = onscreensFor(fc, _si, _rb, _di, true);
           if (onscreensWithDib === 0) {
-            sections.push('With DIb: <b>Already backfires</b>');
+            sections.push('With DI backfire: <b>Already backfires</b>');
           } else {
-            sections.push('With DIb: <b>' + onscreensWithDib + '</b> onscreen' + (onscreensWithDib !== 1 ? 's' : ''));
+            sections.push('With DI backfire: <b>' + onscreensWithDib + '</b> onscreen' + (onscreensWithDib !== 1 ? 's' : ''));
           }
         }
       } else {
