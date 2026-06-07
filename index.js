@@ -1800,17 +1800,25 @@ app.controller('myCtrl', function ($scope) {
       if (calls[++n] < 0.25) choices.push(allEffects['Building Special']);
       if (calls[++n] < 0.15) choices = [allEffects['Cookie Storm Drop']];
       if (calls[++n] < 0.0001) choices.push(allEffects['Free Sugar Lump']);
-      const type = choose(choices);
-      return new type(calls);
+      if (choices.length) { 
+        const type = choices[Math.floor(calls[++n] * choices.length)]; 
+        return new type(calls);
+      } else {
+        return null;
+      }
     } else {
       let choices = [];
       choices.push(allEffects.Clot, allEffects.Ruin);
-      if (Math.random() < 0.1)
+      if (calls[++n] < 0.1)
         choices.push(allEffects['Cursed Finger'], allEffects['Elder Frenzy']);
-      if (Math.random() < 0.003) choices.push(allEffects['Free Sugar Lump']);
-      if (Math.random() < 0.1) choices = [allEffects.Blab];
-      const type = choose(choices);
-      return new type(calls);
+      if (calls[++n] < 0.003) choices.push(allEffects['Free Sugar Lump']);
+      if (calls[++n] < 0.1) choices = [allEffects.Blab];
+      if (choices.length) { 
+        const type = choices[Math.floor(calls[++n] * choices.length)]; 
+        return new type(calls);
+      } else {
+        return null;
+      }
     }
   }
 
