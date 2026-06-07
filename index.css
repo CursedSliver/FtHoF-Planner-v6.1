@@ -468,6 +468,10 @@ button.md-raised.inverted {
 #app.dark .options-box {
   border-color: #b0b0b0;
 }
+#app.dark .md-raised:not(.md-primary) {
+  background-color: #aaaaaa;
+  color: black;
+}
 
 .load-row {
   display: flex;

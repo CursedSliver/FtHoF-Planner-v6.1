@@ -469,6 +469,11 @@ button.md-raised.inverted {
   .options-box {
     border-color: #b0b0b0;
   }
+
+  .md-raised:not(.md-primary) {
+    background-color: #aaaaaa;
+    color: black;
+  }
 }
 
 // ============================================================================

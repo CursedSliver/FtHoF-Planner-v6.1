@@ -151,6 +151,8 @@ app.controller('myCtrl', function ($scope) {
   $scope.backfireModifiersPanelOpen = false;
   $scope.magicCountsPanelOpen = false;
 
+  $scope.dark_mode = false;
+
   $scope.seed = '';
   $scope.hasSeed = false;
   $scope.ascensionMode = 0;
@@ -170,6 +172,18 @@ app.controller('myCtrl', function ($scope) {
   $scope.lookahead = 200;
   $scope.load_more_count = 50;
   $scope.cast_spell_count = 1;
+
+  // Visual options defaults (all persisted across reloads)
+  $scope.default_font = false;
+  $scope.change_icons = false;
+  $scope.hide_effect_elaboration = false;
+  $scope.invert_tooltip_hide_rules = false;
+
+  // Combo finder defaults (all persisted across reloads)
+  $scope.comboFinder = false;
+  $scope.include_ef_in_sequence = true;
+  $scope.skip_abominations = true;
+  $scope.skip_edifices = true;
 
   // Finnless Destroyer (specialized combo finder for Finnless ruleset)
   // Modeled after the mod by xyntercept — see assets/finnless-destroyer.js
@@ -521,6 +535,7 @@ app.controller('myCtrl', function ($scope) {
     }
     str = str.trim();
     $scope.hasSeed = true;
+    LocalStorageManager.get('hasSeed').save();
     if (str.length === 5) {
       $scope.seed = str;
       if (!fromURL)
@@ -563,6 +578,10 @@ app.controller('myCtrl', function ($scope) {
       $scope.$evalAsync($scope.runFinnlessDestroyer);
     }
   };
+  $scope.setHasSeed = function() {
+    $scope.hasSeed = true;
+    LocalStorageManager.get('hasSeed').save();
+  }
 
   class CastRow {
     constructor(
@@ -822,8 +841,6 @@ app.controller('myCtrl', function ($scope) {
   };
 
   //want to return shortest, and first sequence for a given combo_length
-  //if nothing that satisfies max_spread, shortest will still be filled but first will be empty
-  $scope.comboFinder = false;
   function findCombos(combo_length, max_spread, bsIndices, skipIndices) {
     let shortestDistance = 10000000;
     let shortestStart = -1;
@@ -1731,11 +1748,15 @@ app.controller('myCtrl', function ($scope) {
     // warning appears in each tooltip immediately, without forcing a full
     // recompute.
     refreshTooltips();
+    // Persist the current combo-finder inputs so the user does not lose
+    // them if they navigate away without clicking "Apply Settings".
+    LocalStorageManager.get('comboFinder').save();
   };
   $scope.toggleAllHiddenIndicators = function(on) {
     for (let i in allEffects) {
       allEffects[i]._settings.hiddenIndicator = on;
     }
+    LocalStorageManager.get('visualOptions').save();
   }
   $scope.resetDefaultEffectIndicators = function() {
     for (let i in allEffects) {
@@ -1744,6 +1765,7 @@ app.controller('myCtrl', function ($scope) {
     allEffects['Building Special']._settings.hiddenIndicator = true;
     allEffects['Elder Frenzy']._settings.hiddenIndicator = true;
     allEffects['Free Sugar Lump']._settings.hiddenIndicator = true;
+    LocalStorageManager.get('visualOptions').save();
   }
   $scope.getEffectTooltip = function (cookie_list, change) {
     const cast = cookie_list;
@@ -2873,6 +2895,119 @@ app.controller('myCtrl', function ($scope) {
     })
   );
 
+  // ---------------------------------------------------------------------------
+  // Persistence: advanced mode toggle, visual options, and combo finder
+  // settings. These three LocalStorageManager instances are the only settings
+  // groups that survive a page reload — highlights (above) and anything else
+  // (backfire modifiers, magic counts, save_string, etc.) are intentionally
+  // not persisted.
+  // ---------------------------------------------------------------------------
+
+  function getVisualOptionsState() {
+    const hiddenIndicators = {};
+    for (const id of $scope.allEffectsList) {
+      hiddenIndicators[id] = allEffects[id]._settings.hiddenIndicator;
+    }
+    return {
+      lookahead: $scope.lookahead,
+      dark_mode: $scope.dark_mode,
+      default_font: $scope.default_font,
+      change_icons: $scope.change_icons,
+      hide_effect_elaboration: $scope.hide_effect_elaboration,
+      invert_tooltip_hide_rules: $scope.invert_tooltip_hide_rules,
+      hiddenIndicators
+    };
+  }
+  function applyVisualOptionsState(obj) {
+    if (!obj || typeof obj !== 'object') return;
+    if (typeof obj.lookahead === 'number') $scope.lookahead = obj.lookahead;
+    if (typeof obj.dark_mode === 'boolean') $scope.dark_mode = obj.dark_mode;
+    if (typeof obj.default_font === 'boolean') $scope.default_font = obj.default_font;
+    if (typeof obj.change_icons === 'boolean') $scope.change_icons = obj.change_icons;
+    if (typeof obj.hide_effect_elaboration === 'boolean') {
+      $scope.hide_effect_elaboration = obj.hide_effect_elaboration;
+    }
+    if (typeof obj.invert_tooltip_hide_rules === 'boolean') {
+      $scope.invert_tooltip_hide_rules = obj.invert_tooltip_hide_rules;
+    }
+    if (obj.hiddenIndicators && typeof obj.hiddenIndicators === 'object') {
+      for (const id in obj.hiddenIndicators) {
+        if (allEffects[id]) {
+          allEffects[id]._settings.hiddenIndicator = !!obj.hiddenIndicators[id];
+        }
+      }
+    }
+  }
+  $scope.saveVisualOptions = function () {
+    LocalStorageManager.get('visualOptions').save();
+  };
+
+  function getComboFinderState() {
+    return {
+      min_combo_length: $scope.min_combo_length,
+      max_combo_length: $scope.max_combo_length,
+      max_spread: $scope.max_spread,
+      include_ef_in_sequence: $scope.include_ef_in_sequence,
+      skip_abominations: $scope.skip_abominations,
+      skip_edifices: $scope.skip_edifices
+    };
+  }
+  function applyComboFinderState(obj) {
+    if (!obj || typeof obj !== 'object') return;
+    if (typeof obj.comboFinder === 'boolean') $scope.comboFinder = obj.comboFinder;
+    if (typeof obj.min_combo_length === 'number') $scope.min_combo_length = obj.min_combo_length;
+    if (typeof obj.max_combo_length === 'number') $scope.max_combo_length = obj.max_combo_length;
+    if (typeof obj.max_spread === 'number') $scope.max_spread = obj.max_spread;
+    if (typeof obj.include_ef_in_sequence === 'boolean') {
+      $scope.include_ef_in_sequence = obj.include_ef_in_sequence;
+    }
+    if (typeof obj.skip_abominations === 'boolean') {
+      $scope.skip_abominations = obj.skip_abominations;
+    }
+    if (typeof obj.skip_edifices === 'boolean') {
+      $scope.skip_edifices = obj.skip_edifices;
+    }
+  }
+
+  LocalStorageManager.register(
+    new LocalStorageManager('advancedFeatures', {
+      save: () => ({ advancedFeatures: $scope.advancedFeatures }),
+      load: (obj) => {
+        if (obj && typeof obj.advancedFeatures === 'boolean') {
+          $scope.advancedFeatures = obj.advancedFeatures;
+        }
+      }
+    })
+  );
+  LocalStorageManager.register(
+    new LocalStorageManager('hasSeed', {
+      save: () => ({ hasSeed: $scope.hasSeed }),
+      load: (obj) => {
+        if (obj && typeof obj.hasSeed === 'boolean') {
+          $scope.hasSeed = obj.hasSeed;
+        }
+      }
+    })
+  );
+  LocalStorageManager.register(
+    new LocalStorageManager('visualOptions', {
+      save: getVisualOptionsState,
+      load: applyVisualOptionsState
+    })
+  );
+  LocalStorageManager.register(
+    new LocalStorageManager('comboFinder', {
+      save: getComboFinderState,
+      load: applyComboFinderState
+    })
+  );
+
+  $scope.toggleAdvancedFeatures = function () {
+    $scope.advancedFeatures = !$scope.advancedFeatures;
+    $scope.applySettingsPending = false;
+    LocalStorageManager.get('advancedFeatures').save();
+  };
+
   $scope.highlightRearrangementEnabled = false;
   $scope.toggleRearrangementMode = function () {
     $scope.highlightRearrangementEnabled =
@@ -3078,6 +3213,17 @@ app.controller('myCtrl', function ($scope) {
       LocalStorageManager.get('highlights').save();
     }
   };
+
+  // Load persisted settings *before* URL-param-init runs so that the seed
+  // import path (which calls `update_cookies` and therefore reads
+  // `$scope.lookahead`) sees the user's saved visual-option / combo-finder
+  // values on the very first render. The trailing `LocalStorageManager.loadAll()`
+  // below is kept for the highlights manager (which is registered after the
+  // URL-param path) and re-runs these three as a no-op.
+  LocalStorageManager.get('advancedFeatures').load();
+  LocalStorageManager.get('hasSeed').load();
+  LocalStorageManager.get('visualOptions').load();
+  LocalStorageManager.get('comboFinder').load();
 
   var urlParams = new URLSearchParams(window.location.search);
   var seed = urlParams.get('seed');

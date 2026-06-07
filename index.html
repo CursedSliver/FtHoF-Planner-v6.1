@@ -141,7 +141,7 @@
                     style="flex: 2;">{{unifiedGuideIsOpen?'Close guide':'Click me for help! (unified
                     guide)'}}</md-button>
                 <md-button class="md-raised{{advancedFeatures?'':' md-warn'}}"
-                    ng-click="advancedFeatures = !advancedFeatures; applySettingsPending = false;" style="flex: 1;">{{ advancedFeatures?'Hide advanced
+                    ng-click="toggleAdvancedFeatures()" style="flex: 1;">{{ advancedFeatures?'Hide advanced
                     features':'Enable advanced features' }}</md-button>
             </div>
             </p>
@@ -998,24 +998,24 @@
         <div class="options-box visual-options" ng-show="visualOptionsShowing">
             <h3>Visual options</h3>
             <md-divider style="margin-bottom: 5px;"></md-divider>
-            <label>Lookahead Length <input type="number" ng-model="lookahead" min=10 max=100000 ng-change="update_cookies()"></label>
-            <md-checkbox ng-model="dark_mode" checkd ng-change="update_cookies()">
+            <label>Lookahead Length <input type="number" ng-model="lookahead" min=10 max=100000 ng-change="update_cookies(); saveVisualOptions()"></label>
+            <md-checkbox ng-model="dark_mode" checked ng-change="update_cookies(); saveVisualOptions()">
                 Dark Mode
                 <md-tooltip md-direction="top">Dark mode</md-tooltip>
             </md-checkbox>
-            <md-checkbox ng-model="default_font" checked ng-change="update_cookies()">
+            <md-checkbox ng-model="default_font" ng-change="update_cookies(); saveVisualOptions()">
                 Default Font
                 <md-tooltip md-direction="top">The legacy font from the previous planner iterations</md-tooltip>
             </md-checkbox>
-            <md-checkbox ng-model="change_icons" aria-label="Change Icons" ng-change="update_cookies()">
+            <md-checkbox ng-model="change_icons" aria-label="Change Icons" ng-change="update_cookies(); saveVisualOptions()">
                 Combo-focused Icons
                 <md-tooltip md-direction="top">Changes outcome icons to indicate the outcome itself</md-tooltip>
             </md-checkbox>
-            <md-checkbox ng-model="hide_effect_elaboration" aria-label="Hide effect elaboration" ng-change="update_cookies()">
+            <md-checkbox ng-model="hide_effect_elaboration" aria-label="Hide effect elaboration" ng-change="update_cookies(); saveVisualOptions()">
                 Hide effect elaboration
                 <md-tooltip md-direction="top">Removes description about what an effect does in the tooltips</md-tooltip>
             </md-checkbox>
-            <md-checkbox ng-model="invert_tooltip_hide_rules" aria-label="Shift to show tooltips" ng-change="update_cookies(); shiftEventListenerCheck({ shiftKey: hideTooltips })">
+            <md-checkbox ng-model="invert_tooltip_hide_rules" aria-label="Shift to show tooltips" ng-change="update_cookies(); saveVisualOptions(); shiftEventListenerCheck({ shiftKey: hideTooltips })">
                 Shift to show tooltips
                 <md-tooltip md-direction="top">Tooltip is hidden by default, press shift to show the tooltip instead of hiding the tooltip</md-tooltip>
             </md-checkbox>
@@ -1028,7 +1028,7 @@
                 </p>
                 <md-divider style="margin-bottom: 5px;"></md-divider>
                 <span ng-repeat="id in allEffectsList" ng-init="effect = allEffects[id]" style="width: 25%; display: inline-block;">
-                    <md-checkbox ng-model="effect._settings.hiddenIndicator" ng-change="update_cookies()">{{ effect._name + ' (' + effect._shorthand + ')' }}</md-checkbox>
+                    <md-checkbox ng-model="effect._settings.hiddenIndicator" ng-change="update_cookies(); saveVisualOptions()">{{ effect._name + ' (' + effect._shorthand + ')' }}</md-checkbox>
                     <md-tooltip md-direction="top">{{ effect._description }}</md-tooltip>
                 </span>
                 <br>
@@ -1239,7 +1239,7 @@
             <br>
             <br>
             <br>
-            <br><a ng-click="hasSeed = true"><small>Just show me everything already</small></a>
+            <br><a ng-click="setHasSeed()"><small>Just show me everything already</small></a>
         </div>
 </body>
 
