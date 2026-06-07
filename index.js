@@ -743,12 +743,12 @@ app.controller('myCtrl', function ($scope) {
       this.__noChangePostfixShow = noChangeOther.settings.hiddenIndicator;
       this.__noChangePostfixText = cookie_list.postfix(false, isBackfiring ? 0 : 1);
       this.__noChangeTooltip =
-        noChangeActive.getTooltip()
-        + `<md-divider class="margined"></md-divider>`
+        ($scope.hide_effect_elaboration?'':(noChangeActive.getTooltip()
+        + `<md-divider class="margined"></md-divider>`))
         + otherLabel
         + '<b>' + noChangeOther.toString(true) + '</b>'
-        + '<br>'
-        + noChangeOther.getTooltip()
+        + ($scope.hide_effect_elaboration?'':'<br>'
+        + noChangeOther.getTooltip())
         + tooltipHint
         + tooltipWarning;
 
@@ -762,12 +762,12 @@ app.controller('myCtrl', function ($scope) {
       this.__changePostfixShow = changeOther.settings.hiddenIndicator;
       this.__changePostfixText = cookie_list.postfix(true, isBackfiring ? 0 : 1);
       this.__changeTooltip =
-        changeActive.getTooltip()
-        + `<md-divider class="margined"></md-divider>`
+        ($scope.hide_effect_elaboration?'':(changeActive.getTooltip()
+        + `<md-divider class="margined"></md-divider>`))
         + otherLabel
         + '<b>' + changeOther.toString(true) + '</b>'
-        + '<br>'
-        + changeOther.getTooltip()
+        + ($scope.hide_effect_elaboration?'':'<br>'
+        + changeOther.getTooltip())
         + tooltipHint
         + tooltipWarning;
 
