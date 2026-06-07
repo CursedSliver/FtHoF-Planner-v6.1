@@ -131,6 +131,14 @@ class LocalStorageManager {
       this.all[i].load();
     }
   }
+  wipe() {
+    localStorage.removeItem(this.key);
+  }
+  static resetAll() {
+    for (let i in this.all) {
+      this.all[i].wipe();
+    }
+  }
 }
 
 var app = angular.module('myApp', [
@@ -3237,6 +3245,10 @@ app.controller('myCtrl', function ($scope) {
   }
 
   LocalStorageManager.loadAll();
+  $scope.wipeAllSettings = function() { 
+    LocalStorageManager.resetAll();
+    location.reload();
+  }
   $scope.applySettingsPending = false;
   window.app = $scope;
 });

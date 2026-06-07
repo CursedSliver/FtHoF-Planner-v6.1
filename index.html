@@ -51,8 +51,11 @@
                     creating such a helpful (and moddable) tool!</br>
                     The current version is compatible with cookie clicker 2.058, "housekeeping".</p>
             <br>
-            <md-button class="md-raised md-primary" ng-click="collapse_interface(1)" ng-show="hasSeed">Version
-                History</md-button></b>
+            <div layout="row">
+                <md-button class="md-raised md-primary" ng-click="collapse_interface(1)" ng-show="hasSeed">Version History</md-button>
+                <span flex></span>
+                <md-button class="md-raised md-primary md-warn" ng-click="wipeAllSettings();" ng-show="hasSeed">Wipe all saved settings and reload</md-button>
+            </div>
             <div class="collapse-content" id="content-1">
                 <ul>
                     <li><a href="http://fthof-planner.s3-website.us-east-2.amazonaws.com/">FtHoF planner V1</a> by
