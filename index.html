@@ -11,15 +11,14 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.js"></script>
     <!-- Angular-drag-and-drop-lists Library -->
     <script src="./libraries/angular-drag-and-drop-lists.min.js"></script>
-    <!-- Angular tooltips tooltip-append-to-body="true"Library -->
-    <script src="https://cdn.jsdelivr.net/npm/angular-tooltips@1.2.2/dist/angular-tooltips.min.js"></script>
+    <!-- Optimized Spell Tooltips (replaces angular-tooltips) -->
+    <script src="./tooltip.js"></script>
 
     <script defer src="base64.js"></script>
     <script defer src="index.js"></script>
 
     <link rel="shortcut icon" type="image/x-icon" href="img/favicon.ico" />
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.8/angular-material.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/angular-tooltips@1.2.2/dist/angular-tooltips.min.css" />
     <link rel="stylesheet" type="text/css" href="index.css" />
 
 
@@ -44,6 +43,8 @@
                 </md-input-container>
                 <md-button class="md-raised md-primary" ng-click="load_game()">Import Save or Seed</md-button>
             </div>
+          <div class="save-export-help">Can't export save? <a href="https://cursedsliver.github.io/dryCracker" target="_blank">Find out your seed here!</a> (note: not compatible for mobile app)</div>
+          <br>
 
             <p ng-show="advancedFeatures" style="text-align: center;"><b>Based on FtHoF planner v1, v2, v3, v4, v5, and v6 by RebelKeithy, Skeezy,
                     Eminenti, Mylaaan, Joseph, and Leo. <br>Huge thanks to them for
@@ -140,7 +141,7 @@
                     style="flex: 2;">{{unifiedGuideIsOpen?'Close guide':'Click me for help! (unified
                     guide)'}}</md-button>
                 <md-button class="md-raised{{advancedFeatures?'':' md-warn'}}"
-                    ng-click="advancedFeatures = !advancedFeatures" style="flex: 1;">{{ advancedFeatures?'Hide advanced
+                    ng-click="advancedFeatures = !advancedFeatures; applySettingsPending = false;" style="flex: 1;">{{ advancedFeatures?'Hide advanced
                     features':'Enable advanced features' }}</md-button>
             </div>
             </p>
@@ -293,6 +294,26 @@
                                 <td>An unclicked Golden/wrath cookie. These unclicked cookies increase backfire chance of FtHoF.</td>
                             </tr>
                             <tr>
+                                <td>SI</td>
+                                <td>Supreme Intellect</td>
+                                <td>A dragon aura that makes all spells 10% cheaper but increases base backfire chance by 1.1x</td>
+                            </tr>
+                            <tr>
+                                <td>RB</td>
+                                <td>Reality Bending</td>
+                                <td>A dragon aura that makes has 10% of the effects of Supreme Intellect (SI).</td>
+                            </tr>
+                            <tr>
+                                <td>DI</td>
+                                <td>Diminish Ineptitude</td>
+                                <td>A spell that temporarily makes all spells 10 times less likely to backfire on success. Also refers to the effect it generates on success.</td>
+                            </tr>
+                            <tr>
+                                <td>DIb</td>
+                                <td>Diminish Ineptitude backfire</td>
+                                <td>The backfire effect of Diminish Ineptitude, which temporarily makes all spells 5 times as likely to backfire.</td>
+                            </tr>
+                            <tr>
                                 <td>CF</td>
                                 <td>Click frenzy</td>
                                 <td>An effect from Golden/wrath cookies, giving 777x cookie from clicks for a short period.</td>
@@ -358,6 +379,37 @@
                 <div class="block" ng-if="guideHidingStatuses[3]">
                     <div class="advanced-material-warning">This material is only applicable with Advanced features enabled. Toggle it on using the "ENABLE ADVANCED FEATURES" button besides the guide button.</div>
                     <p>The Combo finder can be accessed through the "Open Combo finder" button.</p>
+                    <md-divider></md-divider>
+                    <p>
+                        A combo is a cluster of close-by Building Specials (BSs). Click frenzies (CFs) are ignored because they are extremely common and one can be assumed to exist near any combo that you find.
+                        <br>The combo finder finds those in the seed/save inputted. Note: the combo finder is mainly useful with advanced strategies such as <a href="https://tinyurl.com/CookieFinnlessGrimoire" target="_blank">quadcasting</a> and with at least 600 wizard towers.
+                    </p>
+                    <p>
+                        <b>Combo finder settings</b>
+                        <br>Min combo: the minimum amount of BSs to find.
+                        <br>Max combo: the maximum amount of BSs to find. 
+                        <br>Max spread: dictates how close together the rows with BS must be. Each point of spread is one spell in the sequence that can be non-BS and cannot be skipped for free. 
+                        For example, if you want a 3x combo and are ok with a sequence of [BS, non-BS, BS, BS], that would be a combo size of 3 with a spread of 1, for a total length of 4.
+                        <br>Include Elder frenzies: Elder Frenzies (666x cps for a very short time) also counts as a BS.
+                        <br>Skip abomination: Rows without a useful effect like BS but with Gambler's Fever Dream (GFD) casting Resurrect Abomination does not contribute to its spread (spread from Max spread setting).
+                        This is because on such a row, if you cast GFD while the grandmapocalypse is NOT ongoing, you will go to the next row for free.
+                        <br>Skip spontaneous edifices: Rows without a useful effect like BS but with Gambler's Fever Dream (GFD) casting Spontaneous Edifice successfully does not contribute to its spread (spread from Max spread setting).
+                        Same story as Skip abomination, because on such a row, if you cast GFD while you have at least 400 of every building, you will go to the next row for free.
+                    </p>
+                    <md-divider></md-divider>
+                    <p>
+                        <b>Routing resources</b>
+                        <br>Routing is the act of taking a potential combo and figuring out a way to turn this potential combo into a real combo with a series of executable steps. This is only applicable for very late game (800+ towers) and you need to perform combos with 2+ effects from the Grimoire to progress.
+                        <br><a href="https://cursedsliver.github.io/CCGrimoireCalculator" target="_blank">Grimoire calculator:</a> a tool to figure out spell costs and tower counts quickly. Requires some advanced knowledge of the Grimoire to use.
+                        <br><a href="https://tinyurl.com/CookieFinnlessGrimoire" target="_blank">Finnless Grimoire guide:</a> a late-game guide containing information on how to find and route a combo, including information on how to use the Grimoire calculator above.
+                        <br>You can also go to the <a href="https://discord.gg/cookie" target="_blank">Official Cookie clicker Discord server</a> to ask for help routing a combo.
+                    </p>
+                    <md-divider></md-divider>
+                    <p>
+                        <b>Finnless destroyer</b>
+                        <br>Finnless destroyer is a <a href="https://github.com/xyntercept/finnless-destroyer/tree/main" target="_blank">mod</a> developed by @xyntercept on discord, integrated into this planner. 
+                        <br>It is a very advanced tool for top finnless players to be able to find extremely large combos (10+ effects) quickly.
+                    </p>
                 </div>
                 <md-toolbar class="md-hue-1" style="cursor: pointer;" ng-click="guideHidingStatuses[4] = !guideHidingStatuses[4]">
                     <div class="md-toolbar-tools">
@@ -458,6 +510,23 @@
                                 educational
                                 purposes.
                             </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <b>Finnless Destroyer: A specialized combo finder for the Finnless ruleset
+                            (very large decacasts and beyond). Tied to the same RNG as the main table.</b>
+                        <ul>
+                            <li>Lookahead controls how many spells ahead of your current position to scan.</li>
+                            <li>G!FtHoF range sets the maximum window in which the required G!FtHoFs must appear.</li>
+                            <li>G!FtHoFs needed sets how many GFD&nbsp;→&nbsp;FtHoF casts in that window count as a hit.</li>
+                            <li>Skip SE success &amp; RA extends the window whenever a GFD picks a useless outcome
+                                (Resurrect Abomination or successful Spontaneous Edifice), since those don't cost you
+                                a useful spell slot.</li>
+                            <li>Check G!FtHoF resolve ignores G!FtHoFs that can't realistically reach a nearby BS
+                                (filters out impossible combos).</li>
+                            <li>Auto-run on import will trigger the scan automatically every time you load a save
+                                or seed — useful when hunting for a fresh seed that meets the criteria.</li>
                         </ul>
                     </li>
 
@@ -563,7 +632,9 @@
 
             <md-button class="md-raised md-primary" ng-show="advancedFeatures"
                 ng-click="comboFinder = !comboFinder;">{{comboFinder?'Close':'Open'}} Combo finder</md-button>
-            <div ng-if="comboFinder && advancedFeatures">
+            <md-button class="md-raised md-primary" ng-show="advancedFeatures"
+                ng-click="finnlessDestroyerOpen = !finnlessDestroyerOpen;">{{finnlessDestroyerOpen ? 'Close' : 'Open'}} Finnless Destroyer</md-button>
+            <div ng-show="comboFinder && advancedFeatures">
                 <ul ng-if="combos">
                     <li class="combo-listitem" ng-repeat="combo in combos">
                         <b>{{$index + min_combo_length}}x Combo</b>
@@ -585,24 +656,76 @@
                     </li>
                 </ul>
 
+                <div class="block" style="margin-top: 5px;">
+                    <b>Options:</b>
+                    <br>
+                    <label>
+                        Min Combo 
+                        <input type="number" ng-model="min_combo_length" min=1 max=20 ng-change="flagApplySettings()">
+                        <md-tooltip>Minimum amount of BS that the combo must have.</md-tooltip>
+                    </label>
+
+                    <label>
+                        Max Combo 
+                        <input type="number" ng-model="max_combo_length" min=1 max=20 ng-change="flagApplySettings()">
+                        <md-tooltip>Maximum amount of BS that the combo must have.</md-tooltip>
+                    </label>
+
+                    <label>
+                        Max Spread 
+                        <input type="number" ng-model="max_spread" min=0 max=99 ng-change="flagApplySettings()">
+                        <md-tooltip>How close together the BSs must be. A spread of 0 indicates that they must all be in consecutive casts. Increasing this number makes combos easier to find, but increases difficulty of execution.</md-tooltip>
+                    </label>
+                    <br>
+                    <md-checkbox ng-checked=true ng-model="include_ef_in_sequence" aria-label="Include Elder Frenzy" ng-change="flagApplySettings()">
+                        Include Elder Frenzies
+                        <md-tooltip>If on, each Elder Frenzy also counts as a Building Special.</md-tooltip>
+                    </md-checkbox>
+                    <md-checkbox ng-checked=true ng-model="skip_abominations" aria-label="Allow Abomination Skips" ng-change="flagApplySettings()">
+                        Skip Abominations
+                        <md-tooltip>Rows with GFD casting Resurrect abomination does not contribute to spread, as they can be skipped for free by casting GFD.</md-tooltip>
+                    </md-checkbox>
+
+                    <md-checkbox ng-checked=true ng-model="skip_edifices" aria-label="Allow Spontaneous Edifice Skips" ng-change="flagApplySettings()">
+                        Skip Spontaneous Edifices
+                        <md-tooltip>Rows with GFD casting Spontaneous Edifice success does not contribute to spread, as they can be skipped for free by casting GFD with at least 400 of every building.</md-tooltip>
+                    </md-checkbox>
+                </div>
+            </div>
+
+            <div ng-if="finnlessDestroyerOpen && advancedFeatures" class="finnless-destroyer-box">
+                <p style="font-size: 12px; color: #555; margin-top: 0;">
+                    Finnless Destroyer is a specialized combo finder for the Finnless ruleset
+                    (decacasts and beyond). It scans a long lookahead for sequences of
+                    <i>Gambler's&nbsp;→&nbsp;Force&nbsp;the&nbsp;Hand&nbsp;of&nbsp;Fate</i> casts that
+                    line up with nearby Building Specials. The scan reuses the same RNG as the main
+                    prediction table, so the seed above is what gets analyzed.
+                </p>
+                <md-button class="md-raised md-primary" ng-click="runFinnlessDestroyer()"
+                    ng-disabled="fd_running || !hasSeed">
+                    {{fd_running ? 'Running…' : 'Run Finnless Destroyer'}}
+                </md-button>
+                <md-checkbox ng-model="fd_autoRun" aria-label="Auto-run on import">
+                    Auto-run whenever a save/seed is imported
+                </md-checkbox>
+                <br>
                 <b>Options:</b>
                 <br>
-                <label>Min Combo <input type="number" ng-model="min_combo_length" min=1 max=20></label>
-
-                <label>Max Combo <input type="number" ng-model="max_combo_length" min=1 max=20></label>
-
-                <label>Max Spread <input type="number" ng-model="max_spread" min=0 max=99></label>
+                <label>Lookahead <input type="number" ng-model="fd_lookahead" min="1" max="1000000"></label>
+                <label>G!FtHoF range <input type="number" ng-model="fd_fthofRange" min="1" max="10000"></label>
+                <label>G!FtHoFs needed <input type="number" ng-model="fd_fthofNeeded" min="1" max="10000"></label>
                 <br>
-                <md-checkbox ng-checked=true ng-model="include_ef_in_sequence" aria-label="Include Elder Frenzy">
-                    Include Elder Frenzies
+                <md-checkbox ng-model="fd_useSkips" aria-label="Use skips">
+                    Skip SE success &amp; RA (extends range)
                 </md-checkbox>
-                <md-checkbox ng-checked=true ng-model="skip_abominations" aria-label="Allow Abomination Skips">
-                    Skip Abominations
+                <md-checkbox ng-model="fd_checkResolve" aria-label="Check G!FtHoF resolve">
+                    Check G!FtHoF resolve (look for nearby BS that GFD FtHoFs could land on)
                 </md-checkbox>
-
-                <md-checkbox ng-checked=true ng-model="skip_edifices" aria-label="Allow Spontaneous Edifice Skips">
-                    Skip Spontaneous Edifices
-                </md-checkbox>
+                <br>
+                <b>Output:</b>
+                <textarea readonly style="width: 100%; min-height: 160px; font-family: monospace; font-size: 12px; box-sizing: border-box;"
+                    ng-model="fd_output"
+                    placeholder="Click 'Run Finnless Destroyer' to scan the current seed."></textarea>
             </div>
 
             <md-divider ng-show="advancedFeatures"></md-divider>
@@ -683,7 +806,7 @@
 
                             <!-- Delete Button -->
                             <md-button class="md-raised"
-                                ng-click="highlightRearrangementEnabled?null:removeHighlightCondition(condition)"
+                                ng-click="highlightRearrangementEnabled?null:(removeHighlightCondition(condition)); flagApplySettings()"
                                 style="margin: 0;">
                                 Delete
                             </md-button>
@@ -706,11 +829,11 @@
                             ng-click="toggleRearrangementMode();" style="width: 25%; flex-grow: 0;">
                             {{ highlightRearrangementEnabled?'Disable rearrangement':'Enable rearrangement' }}
                         </md-button>
-                        <md-button class="md-raised md-primary button-add-highlight" ng-click="addHighlightCondition()"
+                        <md-button class="md-raised md-primary button-add-highlight" ng-click="addHighlightCondition(); flagApplySettings()"
                             style="width: 50%; flex-grow: 0;">
                             Add New Highlight
                         </md-button>
-                        <md-button class="md-raised md-primary button-reset-default" ng-click="resetDefaultHighlights()"
+                        <md-button class="md-raised md-primary button-reset-default" ng-click="resetDefaultHighlights(); flagApplySettings()"
                             style="width: 25%; flex-grow: 0;">
                             Reset Default
                         </md-button>
@@ -721,7 +844,7 @@
                             style="width: 33.333%; flex-grow: 0;">
                             Export to clipboard
                         </md-button>
-                        <md-button class="md-raised button-import" ng-click="importHighlights()"
+                        <md-button class="md-raised button-import" ng-click="importHighlights(); flagApplySettings()"
                             style="width: 33.333%; flex-grow: 0;">
                             Import
                         </md-button>
@@ -858,8 +981,8 @@
 
             <md-divider ng-show="hasSeed"></md-divider>
 
-        <md-button class="md-raised md-primary" ng-show="advancedFeatures" ng-click="update_cookies()">Apply Settings</md-button>
-        <md-button class="md-raised md-primary" ng-show="hasSeed" ng-click="cast_spell()" style="min-width: 15%;">
+        <md-button class="md-raised md-primary" ng-show="advancedFeatures && applySettingsPending" ng-class="{'md-warn': applySettingsPending}" ng-click="applySettingsPending = false; update_cookies()">Apply Settings</md-button>
+        <md-button class="md-raised md-primary" ng-show="hasSeed" ng-click="cast_n_spells(1)" style="min-width: 15%;">
             Cast Spell
             <md-tooltip md-direction="top">
                 Press this button each time after you cast a spell in-game.
@@ -868,31 +991,31 @@
         <md-button class="md-raised{{ visualOptionsShowing?' inverted':''}}" ng-show="hasSeed" ng-click="visualOptionsShowing = !visualOptionsShowing">Visual options</md-button>
         <md-button class="md-raised{{ backfireModifiersPanelOpen?' inverted':''}}" ng-show="hasSeed" ng-click="backfireModifiersPanelOpen = !backfireModifiersPanelOpen">Set backfire modifiers</md-button>
         <md-button class="md-raised{{ magicCountsPanelOpen?' inverted':''}}" ng-show="hasSeed && advancedFeatures" ng-click="magicCountsPanelOpen = !magicCountsPanelOpen">Configure magic counts</md-button>
-        <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight BUFF Active" ng-show="hasSeed" ng-click="update_cookies()">
+        <md-checkbox class="c2" ng-model="dragonflight" aria-label="Dragonflight BUFF Active" ng-show="hasSeed" ng-change="update_cookies()">
             GC buff from Dragonflight Present
             <md-tooltip md-direction="top">NOTE: NOT to be confused with the Dragonflight Aura. This is the buff rarely gotten from Golden/Wrath cookies while the Dragonflight Aura is slotted, also called Dragonflight.</md-tooltip>
         </md-checkbox>
         <div class="options-box visual-options" ng-show="visualOptionsShowing">
             <h3>Visual options</h3>
             <md-divider style="margin-bottom: 5px;"></md-divider>
-            <label>Lookahead Length <input type="number" ng-model="lookahead" min=10 max=100000></label>
-            <md-checkbox ng-model="dark_mode" checkd>
+            <label>Lookahead Length <input type="number" ng-model="lookahead" min=10 max=100000 ng-change="update_cookies()"></label>
+            <md-checkbox ng-model="dark_mode" checkd ng-change="update_cookies()">
                 Dark Mode
                 <md-tooltip md-direction="top">Dark mode</md-tooltip>
             </md-checkbox>
-            <md-checkbox ng-model="default_font" checked>
+            <md-checkbox ng-model="default_font" checked ng-change="update_cookies()">
                 Default Font
                 <md-tooltip md-direction="top">The legacy font from the previous planner iterations</md-tooltip>
             </md-checkbox>
-            <md-checkbox ng-model="change_icons" aria-label="Change Icons">
+            <md-checkbox ng-model="change_icons" aria-label="Change Icons" ng-change="update_cookies()">
                 Combo-focused Icons
                 <md-tooltip md-direction="top">Changes outcome icons to indicate the outcome itself</md-tooltip>
             </md-checkbox>
-            <md-checkbox ng-model="hide_effect_elaboration" aria-label="Hide effect elaboration">
+            <md-checkbox ng-model="hide_effect_elaboration" aria-label="Hide effect elaboration" ng-change="update_cookies()">
                 Hide effect elaboration
                 <md-tooltip md-direction="top">Removes description about what an effect does in the tooltips</md-tooltip>
             </md-checkbox>
-            <md-checkbox ng-model="invert_tooltip_hide_rules" aria-label="Shift to show tooltips" ng-click="shiftEventListenerCheck({ shiftKey: hideTooltips })">
+            <md-checkbox ng-model="invert_tooltip_hide_rules" aria-label="Shift to show tooltips" ng-change="update_cookies(); shiftEventListenerCheck({ shiftKey: hideTooltips })">
                 Shift to show tooltips
                 <md-tooltip md-direction="top">Tooltip is hidden by default, press shift to show the tooltip instead of hiding the tooltip</md-tooltip>
             </md-checkbox>
@@ -904,39 +1027,39 @@
                     <br>Use below checkboxes to toggle which ones you wish to make visible in the planner.
                 </p>
                 <md-divider style="margin-bottom: 5px;"></md-divider>
-                <span ng-repeat="id in allEffectsList" ng-init="effect = allEffects[id]" style="width: 25%; display: inline-block;"> 
-                    <md-checkbox ng-model="effect._settings.hiddenIndicator">{{ effect._name + ' (' + effect._shorthand + ')' }}</md-checkbox> 
+                <span ng-repeat="id in allEffectsList" ng-init="effect = allEffects[id]" style="width: 25%; display: inline-block;">
+                    <md-checkbox ng-model="effect._settings.hiddenIndicator" ng-change="update_cookies()">{{ effect._name + ' (' + effect._shorthand + ')' }}</md-checkbox>
                     <md-tooltip md-direction="top">{{ effect._description }}</md-tooltip>
                 </span>
                 <br>
-                <md-button class="md-raised" ng-click="toggleAllHiddenIndicators(true)">Toggle all on</md-button>
-                <md-button class="md-raised" ng-click="toggleAllHiddenIndicators(false)">Toggle all off</md-button>
-                <md-button class="md-raised" ng-click="resetDefaultEffectIndicators()">Reset defaults</md-button>
+                <md-button class="md-raised" ng-click="toggleAllHiddenIndicators(true); update_cookies()">Toggle all on</md-button>
+                <md-button class="md-raised" ng-click="toggleAllHiddenIndicators(false); update_cookies()">Toggle all off</md-button>
+                <md-button class="md-raised" ng-click="resetDefaultEffectIndicators(); update_cookies()">Reset defaults</md-button>
             </div>
         </div>
         <div class="options-box backfire-modifiers" ng-show="backfireModifiersPanelOpen">
             <h3>Backfire modifiers</h3>
             <md-divider style="margin-bottom: 5px;"></md-divider>
-            <label>Golden+Wrath Cookies on screen <input type="number" ng-model="on_screen_cookies" min=0 max=10> (each one adds +15% to final backfire chance)</label>
+            <label>Golden+Wrath Cookies on screen <input type="number" ng-model="on_screen_cookies" min=0 max=10 ng-change="update_cookies()"> (each one adds +15% to final backfire chance)</label>
             <br>
-            
-            <md-checkbox class="c2" ng-model="supremeintellect" aria-label="Supreme Intellect Aura Active">
+
+            <md-checkbox class="c2" ng-model="supremeintellect" aria-label="Supreme Intellect Aura Active" ng-change="update_cookies()">
                 Supreme Intellect Aura Active
                 <md-tooltip md-direction="top">1.1x base backfire chance</md-tooltip>
             </md-checkbox>
 
-            <md-checkbox class="c2" ng-model="realitybending" aria-label="Reality Bending Aura Active">
+            <md-checkbox class="c2" ng-model="realitybending" aria-label="Reality Bending Aura Active" ng-change="update_cookies()">
                 Reality Bending Aura Active
                 <md-tooltip md-direction="top">10% effect of Supreme Intellect; standalone 1.01x base backfire chance, 1.11x when used with Supreme Intellect</md-tooltip>
             </md-checkbox>
             <br>
-            
-            <md-checkbox class="c2" ng-model="diminishineptitude" aria-label="Diminish Ineptitude Success Active">
+
+            <md-checkbox class="c2" ng-model="diminishineptitude" aria-label="Diminish Ineptitude Success Active" ng-change="update_cookies()">
                 Diminish Ineptitude Success Active
                 <md-tooltip md-direction="top">Reduces base backfire chance by 10 times (Does not affect the additional backfire chance from onscreens)</md-tooltip>
             </md-checkbox>
 
-            <md-checkbox class="c2" ng-model="diminishineptitudebackfire" aria-label="Diminish Ineptitude Backfire Active">
+            <md-checkbox class="c2" ng-model="diminishineptitudebackfire" aria-label="Diminish Ineptitude Backfire Active" ng-change="update_cookies()">
                 Diminish Ineptitude Backfire Active
                 <md-tooltip md-direction="top">Increases base backfire chance by 5 times (Does not affect the additional backfire chance from onscreens)</md-tooltip>
             </md-checkbox>
@@ -944,8 +1067,8 @@
         <div class="options-box magic-counts" ng-show="magicCountsPanelOpen">
             <h3>Configure magic counts</h3>
             <md-divider style="margin-bottom: 5px;"></md-divider>
-            <label>Current Mana <input type="number" ng-model="magic" min=0 max=1000></label>
-            <label>Maximum Mana <input type="number" ng-model="max_magic" min=0 max=1000></label>
+            <label>Current Mana <input type="number" ng-model="magic" min=0 max=1000 ng-change="update_cookies()"></label>
+            <label>Maximum Mana <input type="number" ng-model="max_magic" min=0 max=1000 ng-change="update_cookies()"></label>
         </div>
         
             <md-divider ng-show="hasSeed"></md-divider>
@@ -984,7 +1107,11 @@
                         <md-list flex>
                             <md-subheader class="md-no-sticky">Used to determine spell backfires and GFD
                                 spells.</md-subheader>
-                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null">
+                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null"
+                                spell-tooltip
+                                spell-tooltip-content="{{ cookie_list.__randomSeedTooltip }}"
+                                spell-tooltip-direction="below"
+                                spell-tooltip-class="">
                                 <div class="md-list-item-text" layout="column">
                                     <a name="{{$index}}"></a>
                                     <h3>{{cookie_list.__randomSeedText}}</h3>
@@ -1004,7 +1131,12 @@
                         <md-list flex>
                             <md-subheader class="md-no-sticky">Only valid with no season or Christmas
                                 active.</md-subheader>
-                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null">
+                            <md-list-item class="md-2-line"
+                                ng-repeat="cookie_list in cookies" ng-click="null"
+                                spell-tooltip
+                                spell-tooltip-content="{{cookie_list.__noChangeTooltip}}"
+                                spell-tooltip-direction="below"
+                                spell-tooltip-class="">
                                 <img ng-src='{{cookie_list.__noChangeIcon}}'
                                     class="md-avatar" alt="Golden Cookie" />
                                 <div class="md-list-item-text" layout="row">
@@ -1043,7 +1175,11 @@
                                     </md-tooltip>
                                 </div>
                             </md-subheader>
-                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null">
+                            <md-list-item class="md-2-line" ng-repeat="cookie_list in cookies" ng-click="null"
+                                spell-tooltip
+                                spell-tooltip-content="{{cookie_list.__changeTooltip}}"
+                                spell-tooltip-direction="below"
+                                spell-tooltip-class="">
                                 <img ng-src='{{cookie_list.__changeIcon}}'
                                     class="md-avatar" alt="Golden Cookie" />
                                 <div class="md-list-item-text" layout="row">
@@ -1069,7 +1205,11 @@
                         <md-list flex>
                             <md-subheader class="md-no-sticky">The outcome of Gambler's Fever Dream.</md-subheader>
                             <md-list-item class="md-2-line"
-                                ng-repeat="cookie_list in cookies" ng-click="null">
+                                ng-repeat="cookie_list in cookies" ng-click="null"
+                                spell-tooltip
+                                spell-tooltip-content="{{cookie_list.__gfdTooltip}}"
+                                spell-tooltip-direction="below"
+                                spell-tooltip-class="">
                                 <img ng-src='{{cookie_list.__gfdIcon}}'
                                     class="md-avatar md-pixelated" alt="Golden Cookie" />
                                 <div class="md-list-item-text" layout="column">
@@ -1080,7 +1220,10 @@
                     </md-content>
                 </div>
             </div>
-            <md-button class="md-raised md-primary" ng-click="load_more()" ng-show="hasSeed">Load More</md-button>
+            <div class="load-row">
+                <span class="md-raised md-primary button-with-input load-button" role="button" tabindex="0" ng-click="load_more()" ng-keydown="($event.key === 'Enter' || $event.keyCode === 13) && load_more()" ng-show="hasSeed">Load <input type="number" class="button-quantity" ng-model="load_more_count" min="1" step="1" ng-click="$event.stopPropagation()" ng-keydown="$event.stopPropagation()"> more</span>
+                <span class="md-raised md-primary button-with-input cast-button" role="button" tabindex="0" ng-click="cast_spell()" ng-keydown="($event.key === 'Enter' || $event.keyCode === 13) && cast_spell()" ng-show="hasSeed">Cast <input type="number" class="button-quantity" ng-model="cast_spell_count" min="1" step="1" ng-click="$event.stopPropagation()" ng-keydown="$event.stopPropagation()"> more spell(s)</span>
+            </div>
         </div>
         <div ng-show="!hasSeed" style="width: 100%; text-align: center;">
             Import your save above to see predictions for upcoming Force the Hand of Fate casts.

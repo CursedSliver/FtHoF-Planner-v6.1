@@ -180,6 +180,13 @@ h3 {
   border-radius: 4px;
 }
 
+.finnless-destroyer-box {
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
 .highlights-box-title {
   display: flex;
   justify-content: space-between;
@@ -429,6 +436,7 @@ button.md-raised.inverted {
 
   .block,
   .highlights-box,
+  .finnless-destroyer-box,
   table,
   th,
   td {
@@ -460,5 +468,286 @@ button.md-raised.inverted {
 
   .options-box {
     border-color: #b0b0b0;
+  }
+}
+
+// ============================================================================
+// LOAD / CAST SPELL BUTTON ROW (incremental prediction controls)
+// ============================================================================
+.load-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.load-row .button-with-input {
+  // Material-Design raised primary button look (replicated because we use
+  // a <span role="button"> so the inner <input> stays focusable and
+  // interactive — wrapping it in <md-button> / <button> is invalid HTML
+  // and silently breaks ng-model on the inner input).
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  min-width: 88px;
+  line-height: 36px;
+  padding: 0 16px;
+  margin: 0;
+  border: 0;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.010em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  background-color: #e0e0e0;
+  color: rgba(0, 0, 0, 0.87);
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.load-row .button-with-input.md-primary {
+  background-color: #3f51b5;
+  color: #ffffff;
+}
+
+.load-row .button-with-input:hover {
+  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.3);
+}
+
+.load-row .button-with-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(16, 108, 200, 0.4);
+}
+
+.load-row .button-with-input:active {
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+}
+
+.button-quantity {
+  // Reset to a sane, vertically centered inline control.
+  box-sizing: border-box;
+  width: 64px;
+  height: 24px;
+  margin: 0 6px;
+  padding: 0 6px;
+  // Vertically center the digit text inside the input itself.
+  line-height: 22px;
+  text-align: center;
+  vertical-align: middle;
+  background-color: #ffffff;
+  color: #000000;
+  border: 1px solid #777;
+  border-radius: 3px;
+  font: inherit;
+  // Make sure the input eats its own clicks / keys so they don't bubble
+  // up to the parent button (which would re-trigger the load/cast).
+  pointer-events: auto;
+}
+
+.button-quantity::-webkit-outer-spin-button,
+.button-quantity::-webkit-inner-spin-button {
+  opacity: 0.5;
+}
+
+// Dark mode adjustments
+.dark {
+  .button-quantity {
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    border-color: #555;
+  }
+}
+
+// ============================================================================
+// SPELL TOOLTIP STYLES
+// High-performance tooltip system styles
+// ============================================================================
+
+#spell-tooltip-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 99999;
+  overflow: visible;
+}
+
+.spell-tooltip-item {
+  position: absolute;
+  pointer-events: none;
+  // Allow JS to set width; tooltip uses transform to center, so no need for explicit width centering
+  box-sizing: border-box;
+
+  // Default content styling
+  // - white background, 2px black solid border, black text, higher padding, 5px border-radius
+  .spell-tooltip-content {
+    background-color: #ffffff;
+    color: #000000;
+    padding: 12px 16px;
+    border: 2px solid #000000;
+    border-radius: 5px;
+    font-size: 13px;
+    line-height: 1.4;
+    // No max-width here - JS controls width based on content and target
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    white-space: normal;
+    word-wrap: break-word;
+    display: block;
+    position: relative;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  // md-divider spacing inside tooltip
+  .spell-tooltip-content md-divider {
+    margin: 8px 0;
+    border-top-color: #000000;
+  }
+
+  // Small hint text at the bottom of the tooltip
+  .spell-tooltip-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 10px;
+    font-style: italic;
+    opacity: 0.7;
+    text-align: center;
+    color: #444444;
+  }
+
+  // Warning appended below the SHIFT hint when Combo Finder / Highlight
+  // settings have been changed but not yet applied. Underlined by default
+  // (via <u> in the markup) and tinted orange to draw the eye.
+  .spell-tooltip-warning {
+    display: block;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    color: #e69138;
+  }
+
+  // Arrow base styles
+  // Arrow is always black (#000) to match the tooltip border
+  .spell-tooltip-arrow {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+  }
+}
+
+// ABOVE: tooltip above target, arrow points DOWN (--^--)
+.spell-tooltip-above {
+  .spell-tooltip-content {
+    margin-bottom: 0;
+  }
+
+  .spell-tooltip-arrow {
+    bottom: -10px;
+    // Triangle pointing down (border-top is the visible side)
+    // Black arrow to match tooltip border
+    border-top: 10px solid #000000;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+  }
+}
+
+// BELOW: tooltip below target, arrow points UP (--v--)
+.spell-tooltip-below {
+  .spell-tooltip-content {
+    margin-top: 0;
+  }
+
+  .spell-tooltip-arrow {
+    top: -10px;
+    // Triangle pointing up (border-bottom is the visible side)
+    // Black arrow to match tooltip border
+    border-bottom: 10px solid #000000;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+  }
+}
+
+// Dark mode support
+#app.dark {
+  .spell-tooltip-above {
+    .spell-tooltip-content {
+      background-color: #1f1f1f;
+      color: #e0e0e0;
+      border: 2px solid #000000;
+    }
+    .spell-tooltip-content md-divider {
+      border-top-color: #888888;
+    }
+    .spell-tooltip-arrow {
+      border-top-color: #000000;
+    }
+  }
+
+  .spell-tooltip-below {
+    .spell-tooltip-content {
+      background-color: #1f1f1f;
+      color: #e0e0e0;
+      border: 2px solid #000000;
+    }
+    .spell-tooltip-content md-divider {
+      border-top-color: #888888;
+    }
+    .spell-tooltip-arrow {
+      border-bottom-color: #000000;
+    }
+    .spell-tooltip-hint {
+      color: #cccccc;
+    }
+    .spell-tooltip-warning {
+      color: #f5b270;
+    }
+  }
+}
+
+// Custom class examples
+.spell-tooltip-highlight {
+  .spell-tooltip-content {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+  }
+  .spell-tooltip-arrow {
+    border-top-color: #ffc107 !important;
+    border-bottom-color: #ffc107 !important;
+  }
+}
+
+.spell-tooltip-error {
+  .spell-tooltip-content {
+    background-color: #f44336 !important;
+    color: #fff !important;
+  }
+  .spell-tooltip-arrow {
+    border-top-color: #f44336 !important;
+    border-bottom-color: #f44336 !important;
+  }
+}
+
+.spell-tooltip-info {
+  .spell-tooltip-content {
+    background-color: #2196f3 !important;
+    color: #fff !important;
+  }
+  .spell-tooltip-arrow {
+    border-top-color: #2196f3 !important;
+    border-bottom-color: #2196f3 !important;
   }
 }
