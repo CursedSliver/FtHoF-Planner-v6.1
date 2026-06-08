@@ -405,10 +405,12 @@ app.controller('myCtrl', function ($scope) {
   }
 
   $scope.load_more = function () {
+    if ($scope.seed === '') { return; }
     $scope.load_n_more($scope.load_more_count);
   };
 
   $scope.cast_spell = function () {
+    if ($scope.seed === '') { return; }
     $scope.cast_n_spells($scope.cast_spell_count);
   };
 

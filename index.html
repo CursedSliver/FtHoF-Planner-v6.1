@@ -967,7 +967,7 @@
             <md-divider ng-show="hasSeed"></md-divider>
 
         <md-button class="md-raised md-primary" ng-show="advancedFeatures && applySettingsPending" ng-class="{'md-warn': applySettingsPending}" ng-click="applySettingsPending = false; update_cookies()">Apply Settings</md-button>
-        <md-button class="md-raised md-primary" ng-show="hasSeed" ng-click="cast_n_spells(1)" style="min-width: 15%;">
+        <md-button class="md-raised md-primary" ng-disabled="seed===''" ng-show="hasSeed" ng-click="cast_n_spells(1)" style="min-width: 15%;">
             Cast Spell
             <md-tooltip md-direction="top">
                 Press this button each time after you cast a spell in-game.
@@ -1224,8 +1224,12 @@
                 </div>
             </div>
             <div class="load-row">
-                <span class="md-raised md-primary button-with-input load-button" role="button" tabindex="0" ng-click="load_more()" ng-keydown="($event.key === 'Enter' || $event.keyCode === 13) && load_more()" ng-show="hasSeed">Load <input type="number" class="button-quantity" ng-model="load_more_count" min="1" step="1" ng-click="$event.stopPropagation()" ng-keydown="$event.stopPropagation()"> more</span>
-                <span class="md-raised md-primary button-with-input cast-button" role="button" tabindex="0" ng-click="cast_spell()" ng-keydown="($event.key === 'Enter' || $event.keyCode === 13) && cast_spell()" ng-show="hasSeed">Cast <input type="number" class="button-quantity" ng-model="cast_spell_count" min="1" step="1" ng-click="$event.stopPropagation()" ng-keydown="$event.stopPropagation()"> more spell(s)</span>
+                <span class="md-raised md-primary button-with-input load-button{{ seed===''?' disabled':'' }}" role="button" tabindex="0" ng-click="load_more()" ng-keydown="($event.key === 'Enter' || $event.keyCode === 13) && load_more()" ng-show="hasSeed">
+                    Load <input type="number" class="button-quantity no-spinner" ng-model="load_more_count" min="1" step="1" ng-click="$event.stopPropagation()" ng-keydown="$event.stopPropagation()"> more
+                </span>
+                <span class="md-raised md-primary button-with-input cast-button{{ seed===''?' disabled':'' }}" role="button" tabindex="0" ng-click="cast_spell()" ng-keydown="($event.key === 'Enter' || $event.keyCode === 13) && cast_spell()" ng-show="hasSeed">
+                    Cast <input type="number" class="button-quantity no-spinner" ng-model="cast_spell_count" min="1" step="1" ng-click="$event.stopPropagation()" ng-keydown="$event.stopPropagation()"> more spell(s)
+                </span>
             </div>
         </div>
         <div ng-show="!hasSeed" style="width: 100%; text-align: center;">

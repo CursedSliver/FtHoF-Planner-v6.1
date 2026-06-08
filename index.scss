@@ -44,8 +44,15 @@ md-checkbox {
   height: 48px !important;
 }
 
-body > div {
-  padding: 4px;
+input[type="number"].no-spinner::-webkit-outer-spin-button,
+input[type="number"].no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"].no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 label {
@@ -569,6 +576,11 @@ button.md-raised.inverted {
 .breaker {
   width: 100%;
   margin-top: -7px;
+}
+span.md-raised.disabled {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+  color: rgba(0, 0, 0, 0.38) !important;
+  cursor: default;
 }
 
 // Dark mode adjustments
